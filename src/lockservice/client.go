@@ -43,7 +43,7 @@ func call(srv string, rpcname string,
     return false
   }
   defer c.Close()
-    
+
   err := c.Call(rpcname, args, reply)
   if err == nil {
     return true
@@ -63,13 +63,13 @@ func (ck *Clerk) Lock(lockname string) bool {
   args := &LockArgs{}
   args.Lockname = lockname
   var reply LockReply
-  
+
   // send an RPC request, wait for the reply.
   ok := call(ck.servers[0], "LockServer.Lock", args, &reply)
   if ok == false {
     return false
   }
-  
+
   return reply.OK
 }
 
