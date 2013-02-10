@@ -64,6 +64,7 @@ func (ck *Clerk) Lock(lockname string) bool {
     var reply LockReply
 
     // send an RPC request, wait for the reply.
+    //TODO - handle the case where we are unable to contact the server
     ok := call(ck.servers[0], "LockServer.Lock", args, &reply)
     if ok == false {
         return false
