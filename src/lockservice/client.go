@@ -35,15 +35,15 @@ func MakeClerk(primary string, backup string) *Clerk {
 * please use call() to send all RPCs, in client.go and server.go.
 * please don't change this function.
 */
-func call(srv string, rpcname string,
+func call(server string, rpcname string,
 args interface{}, reply interface{}) bool {
-    c, errx := rpc.Dial("unix", srv)
+    connection, errx := rpc.Dial("unix", server)
     if errx != nil {
         return false
     }
-    defer c.Close()
+    defer connection.Close()
 
-    err := c.Call(rpcname, args, reply)
+    err := connection.Call(rpcname, args, reply)
     if err == nil {
         return true
     }
