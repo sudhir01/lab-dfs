@@ -55,7 +55,7 @@ func call(srv string, rpcname string,
 // returns true if the lock service
 // granted the lock, false otherwise.
 //
-// you will have to modify this function.
+// TODO you will have to modify this function.
 //
 func (ck *Clerk) Lock(lockname string) bool {
   // prepare the arguments.
@@ -77,7 +77,7 @@ func (ck *Clerk) Lock(lockname string) bool {
 // ask the lock service to unlock a lock.
 // returns true if the lock was previously held,
 // false otherwise.
-//
+// TODO - implement this function
 
 func (ck *Clerk) Unlock(lockname string) bool {
 
