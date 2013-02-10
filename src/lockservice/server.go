@@ -51,6 +51,7 @@ func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
 func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
 
     // TODO - Your code here.
+    fmt.Printf("[debug] LockServer.Unlock args: %v, reply: %v\n", args, reply)
     return nil
 }
 
