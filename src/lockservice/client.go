@@ -81,8 +81,15 @@ func (ck *Clerk) Lock(lockname string) bool {
 // TODO - implement this function
 
 func (ck *Clerk) Unlock(lockname string) bool {
+    // prepare the arguments.
+    args := &LockArgs{lockname}
+    var reply UnlockReply
 
-    // Your code here.
-
-    return false
+    //ask the lock service to unlock
+    ok := call(ck.servers[0], "LockServer.Unlock", args, &reply)
+    if ok == false {
+        //TODO - handle the case where we are unable to contact the server
+        return false
+    }
+    return reply.OK
 }
