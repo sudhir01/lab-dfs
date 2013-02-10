@@ -8,7 +8,7 @@ import "net/rpc"
 //
 type Clerk struct {
   servers [2]string // primary port, backup port
-  // Your definitions here.
+  // TODO Your definitions here.
 }
 
 
@@ -16,7 +16,7 @@ func MakeClerk(primary string, backup string) *Clerk {
   ck := new(Clerk)
   ck.servers[0] = primary
   ck.servers[1] = backup
-  // Your initialization code here.
+  // TODO Your initialization code here.
   return ck
 }
 
