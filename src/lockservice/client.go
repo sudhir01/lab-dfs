@@ -37,7 +37,7 @@ func MakeClerk(primary string, backup string) *Clerk {
 * please don't change this function.
 */
 func call(server string, rpcname string,
-args interface{}, reply interface{}) bool {
+          args interface{}, reply interface{}) bool {
     connection, errx := rpc.Dial("unix", server)
     if errx != nil {
         return false
