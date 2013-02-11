@@ -22,6 +22,15 @@ type LockServer struct {
     locks map[string]bool
 }
 
+func lockBackup(server   *LockServer,
+                lockName string) error {
+    return nil
+}
+
+func unlockBackup(server   *LockServer,
+                  lockName string) error {
+    return nil
+}
 
 //
 // server Lock RPC handler.
@@ -32,7 +41,7 @@ func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-
+    lockBackup(ls, args.Lockname)
     locked, _ := ls.locks[args.Lockname]
 
     if locked {
@@ -52,6 +61,7 @@ func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
+    unlockBackup(ls, args.Lockname)
     locked, _ := ls.locks[args.Lockname]
 
     if locked {
