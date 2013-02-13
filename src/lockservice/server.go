@@ -22,6 +22,23 @@ type LockServer struct {
     locks map[string]bool
 }
 
+func callServer(server  string,
+                rpcname string,
+                args    interface{},
+                reply   interface{}) bool {
+    connection, errx := rpc.Dial("unix", server)
+    if errx != nil {
+        return false
+    }
+    defer connection.Close()
+
+    err := connection.Call(rpcname, args, reply)
+    if err == nil {
+        return true
+    }
+    return false
+}
+
 func lockBackup(server   *LockServer,
                 lockName string) error {
     return nil
