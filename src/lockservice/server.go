@@ -44,8 +44,8 @@ func lockBackup(server *LockServer,
     return nil
 }
 
-func unlockBackup(server   *LockServer,
-                  lockName string) error {
+func unlockBackup(server *LockServer,
+                  args   *LockArgs) error {
     return nil
 }
 
@@ -78,7 +78,7 @@ func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    unlockBackup(ls, args.Lockname)
+    unlockBackup(ls, args)
     locked, _ := ls.locks[args.Lockname]
 
     if locked {
