@@ -54,7 +54,8 @@ func unlockBackup(server *LockServer,
 //
 // you will have to modify this function
 //
-func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
+func (ls *LockServer) Lock(args  *LockArgs,
+                           reply *LockReply) error {
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
@@ -74,7 +75,8 @@ func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
 //
 // server Unlock RPC handler.
 //
-func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
+func (ls *LockServer) Unlock(args  *UnlockArgs,
+                             reply *UnlockReply) error {
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
@@ -111,17 +113,21 @@ func (ls *LockServer) kill() {
 type DeafConn struct {
     c io.ReadWriteCloser
 }
-func (dc DeafConn) Write(p []byte) (n int, err error) {
+func (dc DeafConn) Write(p []byte) (n   int,
+                                    err error) {
     return len(p), nil
 }
 func (dc DeafConn) Close() error {
     return dc.c.Close()
 }
-func (dc DeafConn) Read(p []byte) (n int, err error) {
+func (dc DeafConn) Read(p []byte) (n   int,
+                                   err error) {
     return dc.c.Read(p)
 }
 
-func StartServer(primary string, backup string, am_primary bool) *LockServer {
+func StartServer(primary    string,
+                 backup     string,
+                 am_primary bool) *LockServer {
     ls := new(LockServer)
     ls.backup = backup
     ls.am_primary = am_primary
