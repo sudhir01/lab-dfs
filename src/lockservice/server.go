@@ -4,7 +4,6 @@ import "net"
 import "net/rpc"
 import "log"
 import "sync"
-import "fmt"
 import "os"
 import "io"
 import "time"
@@ -27,27 +26,27 @@ func (server *LockServer) callServer (remoteServer string,
                                       rpcname      string,
                                       args         interface{},
                                       reply        interface{}) bool {
-    fmt.Printf("[debug] [%v] Server::callServer calling server(%v)\n", server.name, remoteServer)
+    log.Printf("[debug] [%v] Server::callServer calling server(%v)\n", server.name, remoteServer)
     connection, errx := rpc.Dial("unix", remoteServer)
     if errx != nil {
-        fmt.Printf("[error] [%v] Server::callServer calling server(%v) failed\n", server.name, remoteServer)
+        log.Printf("[error] [%v] Server::callServer calling server(%v) failed\n", server.name, remoteServer)
         return false
     }
     defer connection.Close()
 
-    fmt.Printf("[debug] [%v] Server::callServer rpc(%v) on server(%v), attempting\n", server.name, rpcname, remoteServer)
+    log.Printf("[debug] [%v] Server::callServer rpc(%v) on server(%v), attempting\n", server.name, rpcname, remoteServer)
     err := connection.Call(rpcname, args, reply)
     if err == nil {
-        fmt.Printf("[debug] [%v] Server::callServer call rpc(%v) on server(%v), success\n", server.name, rpcname, remoteServer)
+        log.Printf("[debug] [%v] Server::callServer call rpc(%v) on server(%v), success\n", server.name, rpcname, remoteServer)
         return true
     }
 
-    fmt.Printf("[error] [%v] Server::callServer call rpc(%v) on server(%v), failure\n", server.name, rpcname, remoteServer)
+    log.Printf("[error] [%v] Server::callServer call rpc(%v) on server(%v), failure\n", server.name, rpcname, remoteServer)
     return false
 }
 
 func (server *LockServer) onBackup(operation func() error) error {
-    fmt.Printf("[debug] [%v] Server::onBackup is_primary %v\n", server.name, server.am_primary)
+    log.Printf("[debug] [%v] Server::onBackup is_primary %v\n", server.name, server.am_primary)
     if server.am_primary == true {
         return operation()
     }
@@ -56,7 +55,7 @@ func (server *LockServer) onBackup(operation func() error) error {
 
 func (server *LockServer) lockBackup(args *LockArgs,
                                     reply *LockReply) error {
-    fmt.Printf("[debug] [%v] Server::lockBackup calling backup server\n", server.name)
+    log.Printf("[debug] [%v] Server::lockBackup calling backup server\n", server.name)
     ok := server.callServer(server.backup, "LockServer.Lock", args, reply)
     if ok == true {
         reply.OK = true
@@ -70,7 +69,7 @@ func (server *LockServer) lockBackup(args *LockArgs,
 
 func (server *LockServer) unlockBackup(args  *UnlockArgs,
                                        reply *UnlockReply) error {
-    fmt.Printf("[debug] [%v] Server::unlockBackup calling backup server\n", server.name)
+    log.Printf("[debug] [%v] Server::unlockBackup calling backup server\n", server.name)
     ok := server.callServer(server.backup, "LockServer.Unlock", args, reply)
     if ok == true {
         reply.OK = true
@@ -89,11 +88,11 @@ func (server *LockServer) unlockBackup(args  *UnlockArgs,
 //
 func (ls *LockServer) Lock(args  *LockArgs,
                            reply *LockReply) error {
-    fmt.Printf("[debug] [%v] Server::Lock lock (%v) called for server, locks: (%v)\n", ls.name, args, ls.locks)
+    log.Printf("[debug] [%v] Server::Lock lock (%v) called for server, locks: (%v)\n", ls.name, args, ls.locks)
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    fmt.Printf("[debug] [%v] Server::Lock called backup server\n", ls.name)
+    log.Printf("[debug] [%v] Server::Lock called backup server\n", ls.name)
     locked, _ := ls.locks[args.Lockname]
 
     if locked {
@@ -104,7 +103,7 @@ func (ls *LockServer) Lock(args  *LockArgs,
     }
 
     var backupReply LockReply
-    fmt.Printf("[debug] [%v] Server::Lock calling backup server\n", ls.name)
+    log.Printf("[debug] [%v] Server::Lock calling backup server\n", ls.name)
     backupLockFn := func() error { return ls.lockBackup(args, &backupReply) }
     ls.onBackup(backupLockFn)
     return nil
@@ -168,7 +167,7 @@ func (dc DeafConn) Read(p []byte) (n   int,
 func StartServer(primary    string,
                  backup     string,
                  am_primary bool) *LockServer {
-    fmt.Printf("[debug] Server::StartServer starting server primary(%v), backup(%v), am_primary(%v)\n", primary, backup, am_primary)
+    log.Printf("[debug] Server::StartServer starting server primary(%v), backup(%v), am_primary(%v)\n", primary, backup, am_primary)
     ls := new(LockServer)
     if am_primary == true {
         ls.name = primary
@@ -236,7 +235,7 @@ func StartServer(primary    string,
                 conn.Close()
             }
             if err != nil && ls.dead == false {
-                fmt.Printf("LockServer(%v) accept: %v\n", me, err.Error())
+                log.Printf("LockServer(%v) accept: %v\n", me, err.Error())
                 ls.kill()
             }
         }
