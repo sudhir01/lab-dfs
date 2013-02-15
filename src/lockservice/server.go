@@ -23,10 +23,10 @@ type LockServer struct {
     locks      map[string]bool
 }
 
-func (server *LockServer) callServer (remoteServer  string,
-                                      rpcname       string,
-                                      args          interface{},
-                                      reply         interface{}) bool {
+func (server *LockServer) callServer (remoteServer string,
+                                      rpcname      string,
+                                      args         interface{},
+                                      reply        interface{}) bool {
     fmt.Printf("[debug] [%v] Server::callServer calling server(%v)\n", server.name, remoteServer)
     connection, errx := rpc.Dial("unix", remoteServer)
     if errx != nil {
