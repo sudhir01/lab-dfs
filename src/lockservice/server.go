@@ -16,7 +16,7 @@ type LockServer struct {
     dying      bool // for test_test.go
 
     am_primary bool // am I the primary?
-    name       string   // backup's port
+    name       string   // server's port
     backup     string   // backup's port
 
     // for each lock name, is it locked?
