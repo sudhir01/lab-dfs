@@ -40,7 +40,20 @@ func callServer(server  string,
 }
 
 func lockBackup(server *LockServer,
-                args   *LockArgs) error {
+                args   *LockArgs,
+                reply  *LockReply) error {
+    // TODO - move the check to a better function call
+    if server.am_primary == false {
+        return nil
+    }
+    ok := call(server.backup, "LockServer.Lock", args, reply)
+    if ok == true {
+        reply.OK = true
+        //TODO - do something if backup responsds
+    } else {
+        reply.OK = false
+        //TODO - call to backup failed, mark is as dead?
+    }
     return nil
 }
 
@@ -59,7 +72,8 @@ func (ls *LockServer) Lock(args  *LockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    lockBackup(ls, args)
+    var backupReply LockReply
+    lockBackup(ls, args, &backupReply)
     locked, _ := ls.locks[args.Lockname]
 
     if locked {
