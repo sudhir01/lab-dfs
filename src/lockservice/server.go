@@ -45,7 +45,7 @@ func lockBackup(server *LockServer,
 }
 
 func unlockBackup(server *LockServer,
-                  args   *LockArgs) error {
+                  args   *UnlockArgs) error {
     return nil
 }
 
