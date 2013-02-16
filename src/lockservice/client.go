@@ -102,7 +102,7 @@ func (ck *Clerk) Lock(lockname string) bool {
 
 func (ck *Clerk) Unlock(lockname string) bool {
     // prepare the arguments.
-    args := &LockArgs{lockname, 0}
+    args := &UnlockArgs{lockname, 0}
     var reply UnlockReply
 
     //ask the lock service to unlock
