@@ -79,7 +79,8 @@ args interface{}, reply interface{}) bool {
 //
 func (ck *Clerk) Lock(lockname string) bool {
     // prepare the arguments.
-    args := &LockArgs{}
+    var requestId int64 = 0
+    args := &LockArgs{lockname, requestId}
     args.Lockname = lockname
     var reply LockReply
 
@@ -102,7 +103,8 @@ func (ck *Clerk) Lock(lockname string) bool {
 
 func (ck *Clerk) Unlock(lockname string) bool {
     // prepare the arguments.
-    args := &UnlockArgs{lockname, 0}
+    var requestId int64 = 0
+    args := &UnlockArgs{lockname, requestId}
     var reply UnlockReply
 
     //ask the lock service to unlock
