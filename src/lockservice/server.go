@@ -20,6 +20,7 @@ type LockServer struct {
 
     // for each lock name, is it locked?
     locks      map[string]bool
+    requestIds map[int64]bool
 }
 
 func (server *LockServer) callServer (remoteServer string,
@@ -93,7 +94,16 @@ func (ls *LockServer) Lock(args  *LockArgs,
     defer ls.mu.Unlock()
 
     log.Printf("[debug] [%v] Server::Lock called backup server\n", ls.name)
-    locked, _ := ls.locks[args.Lockname]
+    requestId           := args.RequestId
+    duplicateRequest, _ := ls.requestIds[requestId]
+    locked, _           := ls.locks[args.Lockname]
+
+    if duplicateRequest {
+        reply.OK = false
+        return nil
+    } else {
+        ls.requestIds[requestId] = true
+    }
 
     if locked {
         reply.OK = false
@@ -120,7 +130,16 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     var unlockReply UnlockReply
     fn := func() error { return ls.unlockBackup(args, &unlockReply) }
     ls.onBackup(fn)
-    locked, _ := ls.locks[args.Lockname]
+    requestId           := args.RequestId
+    duplicateRequest, _ := ls.requestIds[requestId]
+    locked, _           := ls.locks[args.Lockname]
+
+    if duplicateRequest {
+        reply.OK = false
+        return nil
+    } else {
+        ls.requestIds[requestId] = true
+    }
 
     if locked {
         ls.locks[args.Lockname] = false
@@ -177,9 +196,9 @@ func StartServer(primary    string,
     ls.backup = backup
     ls.am_primary = am_primary
     ls.locks = map[string]bool{}
+    ls.requestIds = map[int64]bool{}
 
     // Your initialization code here.
-
 
     me := ""
     if am_primary {
