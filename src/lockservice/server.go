@@ -93,23 +93,23 @@ func (ls *LockServer) Lock(args  *LockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    log.Printf("[debug] [%v] Server::Lock called backup server\n", ls.name)
     requestId           := args.RequestId
     duplicateRequest, _ := ls.requestIds[requestId]
     locked, _           := ls.locks[args.Lockname]
 
-    if duplicateRequest {
-        reply.OK = false
+    log.Printf("[debug] [%v] Server::Lock current state duplicateRequest(%v) locked(%v)\n", ls.name, duplicateRequest, locked)
+
+    if duplicateRequest && locked {
+        reply.OK = true
         return nil
-    } else {
-        ls.requestIds[requestId] = true
     }
 
     if locked {
         reply.OK = false
     } else {
         reply.OK = true
-        ls.locks[args.Lockname] = true
+        ls.locks[args.Lockname]  = true
+        ls.requestIds[requestId] = true
     }
 
     var backupReply LockReply
@@ -134,15 +134,14 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     duplicateRequest, _ := ls.requestIds[requestId]
     locked, _           := ls.locks[args.Lockname]
 
-    if duplicateRequest {
-        reply.OK = false
+    if duplicateRequest && !locked {
+        reply.OK = true
         return nil
-    } else {
-        ls.requestIds[requestId] = true
     }
 
     if locked {
-        ls.locks[args.Lockname] = false
+        ls.locks[args.Lockname]  = false
+        ls.requestIds[requestId] = true
         reply.OK = true
     } else {
         reply.OK = false
