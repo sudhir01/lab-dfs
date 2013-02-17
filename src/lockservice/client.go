@@ -1,6 +1,7 @@
 package lockservice
 
 import "net/rpc"
+import "log"
 
 //
 // the lockservice Clerk lives in the client
@@ -54,12 +55,13 @@ func call(server string, rpcname string,
 * calls call() for the first server in the list of servers. If it is unable to
 * reach the server, then it tries to call the next server in the array.
 */
-func callWithFallback(servers [2]string, rpcname string,
+func callWithFallback(servers []string, rpcname string,
 args interface{}, reply interface{}) bool {
     called      := false
     serverCount := len(servers)
     tries       := 0
 
+    log.Printf("[debug] Client::callWithFallback serverCount(%v)", serverCount)
     for called == false && tries < serverCount {
         called = call(servers[tries], rpcname, args, reply)
         tries += 1
@@ -85,7 +87,7 @@ func (ck *Clerk) Lock(lockname string) bool {
 
     // send an RPC request, wait for the reply.
     //TODO - handle the case where we are unable to contact the server
-    ok := callWithFallback(ck.servers, "LockServer.Lock", args, &reply)
+    ok := callWithFallback(ck.servers[0:], "LockServer.Lock", args, &reply)
     if ok == false {
         return false
     }
@@ -107,7 +109,7 @@ func (ck *Clerk) Unlock(lockname string) bool {
     var reply UnlockReply
 
     //ask the lock service to unlock
-    ok := callWithFallback(ck.servers, "LockServer.Unlock", args, &reply)
+    ok := callWithFallback(ck.servers[0:], "LockServer.Unlock", args, &reply)
     if ok == false {
         //TODO - handle the case where we are unable to contact the server
         return false
