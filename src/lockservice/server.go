@@ -127,6 +127,8 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
+    log.Printf("[debug] [%v] Server::Unlock lock (%v) called for server, locks: (%v)\n", ls.name, args, ls.locks)
+
     var unlockReply UnlockReply
     fn := func() error { return ls.unlockBackup(args, &unlockReply) }
     ls.onBackup(fn)
@@ -134,6 +136,7 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     duplicateRequest, _ := ls.requestIds[requestId]
     locked, _           := ls.locks[args.Lockname]
 
+    log.Printf("[debug] [%v] Server::Unlock current state duplicateRequest(%v) locked(%v)\n", ls.name, duplicateRequest, locked)
     if duplicateRequest && !locked {
         reply.OK = true
         return nil
