@@ -65,7 +65,7 @@ args interface{}, reply interface{}) bool {
     for called == false && tries < serverCount {
         server := servers[tries]
         tries += 1
-        log.Printf("[debug] Client::callWithFallback server(%v) attempt(%v) calling..", server, tries)
+        log.Printf("[debug] Client::callWithFallback server(%v) attempt(%v) args(%v) calling..", server, tries, args)
         called = call(server, rpcname, args, reply)
         log.Printf("[debug] Client::callWithFallback server(%v) attempt(%v) response(%v)", server, tries, called)
     }
