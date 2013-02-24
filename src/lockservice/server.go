@@ -4,55 +4,163 @@ import "net"
 import "net/rpc"
 import "log"
 import "sync"
-import "fmt"
 import "os"
 import "io"
 import "time"
 
 type LockServer struct {
-  mu sync.Mutex
-  l net.Listener
-  dead bool  // for test_test.go
-  dying bool // for test_test.go
+    mu         sync.Mutex
+    l          net.Listener
+    dead       bool  // for test_test.go
+    dying      bool // for test_test.go
 
-  am_primary bool // am I the primary?
-  backup string   // backup's port
+    am_primary bool // am I the primary?
+    name       string   // server's port
+    backup     string   // backup's port
 
-  // for each lock name, is it locked?
-  locks map[string]bool
+    // for each lock name, is it locked?
+    locks          map[string]bool
+    requestHistory map[int64]bool
 }
 
+func (server *LockServer) callServer (remoteServer string,
+                                      rpcname      string,
+                                      args         interface{},
+                                      reply        interface{}) bool {
+    log.Printf("[debug] [%v] Server::callServer calling server(%v)\n", server.name, remoteServer)
+    connection, errx := rpc.Dial("unix", remoteServer)
+    if errx != nil {
+        log.Printf("[error] [%v] Server::callServer calling server(%v) failed\n", server.name, remoteServer)
+        return false
+    }
+    defer connection.Close()
+
+    log.Printf("[debug] [%v] Server::callServer rpc(%v) on server(%v), attempting\n", server.name, rpcname, remoteServer)
+    err := connection.Call(rpcname, args, reply)
+    if err == nil {
+        log.Printf("[debug] [%v] Server::callServer call rpc(%v) on server(%v), success\n", server.name, rpcname, remoteServer)
+        return true
+    }
+
+    log.Printf("[error] [%v] Server::callServer call rpc(%v) on server(%v), failure\n", server.name, rpcname, remoteServer)
+    return false
+}
+
+func (server *LockServer) onBackup(operation func() error) error {
+    log.Printf("[debug] [%v] Server::onBackup is_primary %v\n", server.name, server.am_primary)
+    if server.am_primary == true {
+        return operation()
+    }
+    return nil
+}
+
+func (server *LockServer) lockBackup(args *LockArgs,
+                                    reply *LockReply) error {
+    log.Printf("[debug] [%v] Server::lockBackup calling backup server\n", server.name)
+    ok := server.callServer(server.backup, "LockServer.Lock", args, reply)
+    if ok == true {
+        reply.OK = true
+        //TODO - do something if backup responsds
+    } else {
+        reply.OK = false
+        //TODO - call to backup failed, mark is as dead?
+    }
+    return nil
+}
+
+func (server *LockServer) unlockBackup(args  *UnlockArgs,
+                                       reply *UnlockReply) error {
+    log.Printf("[debug] [%v] Server::unlockBackup calling backup server\n", server.name)
+    ok := server.callServer(server.backup, "LockServer.Unlock", args, reply)
+    if ok == true {
+        reply.OK = true
+        //TODO - do something if backup responsds
+    } else {
+        reply.OK = false
+        //TODO - call to backup failed, mark is as dead?
+    }
+    return nil
+}
 
 //
 // server Lock RPC handler.
 //
 // you will have to modify this function
 //
-func (ls *LockServer) Lock(args *LockArgs, reply *LockReply) error {
-  ls.mu.Lock()
-  defer ls.mu.Unlock()
+func (ls *LockServer) Lock(args  *LockArgs,
+                           reply *LockReply) error {
+    ls.mu.Lock()
+    defer ls.mu.Unlock()
 
+    source    := args.RequestSource
+    lockname  := args.Lockname
+    locked, _ := ls.locks[lockname]
+    requestId := args.RequestId
 
-  locked, _ := ls.locks[args.Lockname]
+    duplicateResponse, duplicateRequest := ls.requestHistory[requestId]
 
-  if locked {
-    reply.OK = false
-  } else {
-    reply.OK = true
-    ls.locks[args.Lockname] = true
-  }
+    log.Printf("[debug] [%v] Server::Lock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
-  return nil
+    if duplicateRequest {
+        reply.OK = duplicateResponse
+        return nil
+    }
+
+    if locked {
+        reply.OK = false
+    } else {
+        reply.OK           = true
+        ls.locks[lockname] = true
+    }
+    ls.requestHistory[requestId] = reply.OK
+
+    var backupReply LockReply
+    serverArgs               := *args
+    serverArgs.RequestSource = "server"
+    fn := func() error { return ls.lockBackup(&serverArgs, &backupReply) }
+    ls.onBackup(fn)
+
+    return nil
 }
 
 //
 // server Unlock RPC handler.
 //
-func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
+func (ls *LockServer) Unlock(args  *UnlockArgs,
+                             reply *UnlockReply) error {
+    ls.mu.Lock()
+    defer ls.mu.Unlock()
 
-  // Your code here.
 
-  return nil
+    source    := args.RequestSource
+    lockname  := args.Lockname
+    requestId := args.RequestId
+    locked, _ := ls.locks[lockname]
+
+    duplicateResponse, duplicateRequest := ls.requestHistory[requestId]
+
+    log.Printf("[debug] [%v] Server::Unlock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
+
+    if duplicateRequest {
+        reply.OK = duplicateResponse
+        return nil
+    }
+
+    if locked {
+        ls.locks[lockname] = false
+        reply.OK           = true
+    } else {
+        reply.OK = false
+    }
+    ls.requestHistory[requestId] = reply.OK
+
+    var unlockReply UnlockReply
+    serverArgs               := *args
+    serverArgs.RequestSource = "server"
+    fn := func() error { return ls.unlockBackup(&serverArgs, &unlockReply) }
+    ls.onBackup(fn)
+
+    return nil
 }
 
 //
@@ -61,8 +169,8 @@ func (ls *LockServer) Unlock(args *UnlockArgs, reply *UnlockReply) error {
 // please don't change this.
 //
 func (ls *LockServer) kill() {
-  ls.dead = true
-  ls.l.Close()
+    ls.dead = true
+    ls.l.Close()
 }
 
 //
@@ -73,86 +181,97 @@ func (ls *LockServer) kill() {
 // please don't change anything to do with DeafConn.
 //
 type DeafConn struct {
-  c io.ReadWriteCloser
+    c io.ReadWriteCloser
 }
-func (dc DeafConn) Write(p []byte) (n int, err error) {
-  return len(p), nil
+func (dc DeafConn) Write(p []byte) (n   int,
+                                    err error) {
+    return len(p), nil
 }
 func (dc DeafConn) Close() error {
-  return dc.c.Close()
+    return dc.c.Close()
 }
-func (dc DeafConn) Read(p []byte) (n int, err error) {
-  return dc.c.Read(p)
+func (dc DeafConn) Read(p []byte) (n   int,
+                                   err error) {
+    return dc.c.Read(p)
 }
 
-func StartServer(primary string, backup string, am_primary bool) *LockServer {
-  ls := new(LockServer)
-  ls.backup = backup
-  ls.am_primary = am_primary
-  ls.locks = map[string]bool{}
-
-  // Your initialization code here.
-
-
-  me := ""
-  if am_primary {
-    me = primary
-  } else {
-    me = backup
-  }
-
-  // tell net/rpc about our RPC server and handlers.
-  rpcs := rpc.NewServer()
-  rpcs.Register(ls)
-
-  // prepare to receive connections from clients.
-  // change "unix" to "tcp" to use over a network.
-  os.Remove(me) // only needed for "unix"
-  l, e := net.Listen("unix", me);
-  if e != nil {
-    log.Fatal("listen error: ", e);
-  }
-  ls.l = l
-
-  // please don't change any of the following code,
-  // or do anything to subvert it.
-
-  // create a thread to accept RPC connections from clients.
-  go func() {
-    for ls.dead == false {
-      conn, err := ls.l.Accept()
-      if err == nil && ls.dead == false {
-        if ls.dying {
-          // process the request but force discard of reply.
-
-          // without this the connection is never closed,
-          // b/c ServeConn() is waiting for more requests.
-          // test_test.go depends on this two seconds.
-          go func() {
-            time.Sleep(2 * time.Second)
-            conn.Close()
-          }()
-          ls.l.Close()
-
-          // this object has the type ServeConn expects,
-          // but discards writes (i.e. discards the RPC reply).
-          deaf_conn := DeafConn{c : conn}
-
-          rpcs.ServeConn(deaf_conn)
-
-          ls.dead = true
-        } else {
-          go rpcs.ServeConn(conn)
-        }
-      } else if err == nil {
-        conn.Close()
-      }
-      if err != nil && ls.dead == false {
-        fmt.Printf("LockServer(%v) accept: %v\n", me, err.Error())
-        ls.kill()
-      }
+func StartServer(primary    string,
+                 backup     string,
+                 am_primary bool) *LockServer {
+    log.Printf("[debug] Server::StartServer starting server primary(%v), backup(%v), am_primary(%v)\n", primary, backup, am_primary)
+    ls := new(LockServer)
+    if am_primary == true {
+        ls.name = primary
+    } else {
+        ls.name = backup
     }
-  }()
 
-  return ls
+    ls.backup         = backup
+    ls.am_primary     = am_primary
+    ls.locks          = map[string]bool{}
+    ls.requestHistory = map[int64]bool{}
+
+    // Your initialization code here.
+
+    me := ""
+    if am_primary {
+        me = primary
+    } else {
+        me = backup
+    }
+
+    // tell net/rpc about our RPC server and handlers.
+    rpcs := rpc.NewServer()
+    rpcs.Register(ls)
+
+    // prepare to receive connections from clients.
+    // change "unix" to "tcp" to use over a network.
+    os.Remove(me) // only needed for "unix"
+    l, e := net.Listen("unix", me);
+    if e != nil {
+        log.Fatal("listen error: ", e);
+    }
+    ls.l = l
+
+    // please don't change any of the following code,
+    // or do anything to subvert it.
+
+    // create a thread to accept RPC connections from clients.
+    go func() {
+        for ls.dead == false {
+            conn, err := ls.l.Accept()
+            if err == nil && ls.dead == false {
+                if ls.dying {
+                    // process the request but force discard of reply.
+
+                    // without this the connection is never closed,
+                    // b/c ServeConn() is waiting for more requests.
+                    // test_test.go depends on this two seconds.
+                    go func() {
+                        time.Sleep(2 * time.Second)
+                        conn.Close()
+                    }()
+                    ls.l.Close()
+
+                    // this object has the type ServeConn expects,
+                    // but discards writes (i.e. discards the RPC reply).
+                    deaf_conn := DeafConn{c : conn}
+
+                    rpcs.ServeConn(deaf_conn)
+
+                    ls.dead = true
+                } else {
+                    go rpcs.ServeConn(conn)
+                }
+            } else if err == nil {
+                conn.Close()
+            }
+            if err != nil && ls.dead == false {
+                log.Printf("LockServer(%v) accept: %v\n", me, err.Error())
+                ls.kill()
+            }
+        }
+    }()
+
+    return ls
 }

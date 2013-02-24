@@ -2,6 +2,7 @@ package lockservice
 
 import "testing"
 import "runtime"
+import "runtime/debug"
 import "math/rand"
 import "os"
 import "strconv"
@@ -11,6 +12,7 @@ import "fmt"
 func tl(t *testing.T, ck *Clerk, lockname string, expected bool) {
   x := ck.Lock(lockname)
   if x != expected {
+    debug.PrintStack()
     t.Fatalf("Lock(%v) returned %v; expected %v", lockname, x, expected)
   }
 }
@@ -18,6 +20,7 @@ func tl(t *testing.T, ck *Clerk, lockname string, expected bool) {
 func tu(t *testing.T, ck *Clerk, lockname string, expected bool) {
   x := ck.Unlock(lockname)
   if x != expected {
+    debug.PrintStack()
     t.Fatalf("Unlock(%v) returned %v; expected %v", lockname, x, expected)
   }
 }
