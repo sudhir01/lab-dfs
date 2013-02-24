@@ -105,12 +105,12 @@ func (ls *LockServer) Lock(args  *LockArgs,
         return nil
     }
 
+    ls.requestIds[requestId] = true
     if locked {
         reply.OK = false
     } else {
         reply.OK = true
-        ls.locks[lockname]       = true
-        ls.requestIds[requestId] = true
+        ls.locks[lockname] = true
     }
 
     var backupReply LockReply
@@ -144,9 +144,9 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
         return nil
     }
 
+    ls.requestIds[requestId] = true
     if locked {
-        ls.locks[lockname]       = false
-        ls.requestIds[requestId] = true
+        ls.locks[lockname] = false
         reply.OK = true
     } else {
         reply.OK = false
