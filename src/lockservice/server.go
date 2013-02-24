@@ -19,8 +19,8 @@ type LockServer struct {
     backup     string   // backup's port
 
     // for each lock name, is it locked?
-    locks      map[string]bool
-    requestIds map[int64]bool
+    locks          map[string]bool
+    requestHistory map[int64]bool
 }
 
 func (server *LockServer) callServer (remoteServer string,
@@ -92,26 +92,27 @@ func (ls *LockServer) Lock(args  *LockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    source              := args.RequestSource
-    lockname            := args.Lockname
-    requestId           := args.RequestId
-    duplicateRequest, _ := ls.requestIds[requestId]
-    locked, _           := ls.locks[lockname]
+    source    := args.RequestSource
+    lockname  := args.Lockname
+    locked, _ := ls.locks[lockname]
+    requestId := args.RequestId
+
+    duplicateResponse, duplicateRequest := ls.requestHistory[requestId]
 
     log.Printf("[debug] [%v] Server::Lock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
     if duplicateRequest {
-        reply.OK = true
+        reply.OK = duplicateResponse
         return nil
     }
 
-    ls.requestIds[requestId] = true
     if locked {
         reply.OK = false
     } else {
-        reply.OK = true
+        reply.OK           = true
         ls.locks[lockname] = true
     }
+    ls.requestHistory[requestId] = reply.OK
 
     var backupReply LockReply
     serverArgs               := *args
@@ -131,26 +132,27 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     defer ls.mu.Unlock()
 
 
-    source              := args.RequestSource
-    lockname            := args.Lockname
-    requestId           := args.RequestId
-    duplicateRequest, _ := ls.requestIds[requestId]
-    locked, _           := ls.locks[lockname]
+    source    := args.RequestSource
+    lockname  := args.Lockname
+    requestId := args.RequestId
+    locked, _ := ls.locks[lockname]
+
+    duplicateResponse, duplicateRequest := ls.requestHistory[requestId]
 
     log.Printf("[debug] [%v] Server::Unlock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
     if duplicateRequest {
-        reply.OK = true
+        reply.OK = duplicateResponse
         return nil
     }
 
-    ls.requestIds[requestId] = true
     if locked {
         ls.locks[lockname] = false
-        reply.OK = true
+        reply.OK           = true
     } else {
         reply.OK = false
     }
+    ls.requestHistory[requestId] = reply.OK
 
     var unlockReply UnlockReply
     serverArgs               := *args
@@ -203,10 +205,11 @@ func StartServer(primary    string,
     } else {
         ls.name = backup
     }
-    ls.backup = backup
-    ls.am_primary = am_primary
-    ls.locks = map[string]bool{}
-    ls.requestIds = map[int64]bool{}
+
+    ls.backup         = backup
+    ls.am_primary     = am_primary
+    ls.locks          = map[string]bool{}
+    ls.requestHistory = map[int64]bool{}
 
     // Your initialization code here.
 
