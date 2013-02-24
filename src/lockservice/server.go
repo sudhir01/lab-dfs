@@ -93,11 +93,13 @@ func (ls *LockServer) Lock(args  *LockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
+    source              := args.RequestSource
+    lockname            := args.Lockname
     requestId           := args.RequestId
     duplicateRequest, _ := ls.requestIds[requestId]
-    locked, _           := ls.locks[args.Lockname]
+    locked, _           := ls.locks[lockname]
 
-    log.Printf("[debug] [%v] Server::Lock current state duplicateRequest(%v) locked(%v)\n", ls.name, duplicateRequest, locked)
+    log.Printf("[debug] [%v] Server::Lock lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
     if duplicateRequest && locked {
         reply.OK = true
@@ -108,14 +110,16 @@ func (ls *LockServer) Lock(args  *LockArgs,
         reply.OK = false
     } else {
         reply.OK = true
-        ls.locks[args.Lockname]  = true
+        ls.locks[lockname]       = true
         ls.requestIds[requestId] = true
     }
 
     var backupReply LockReply
-    log.Printf("[debug] [%v] Server::Lock calling backup server\n", ls.name)
-    backupLockFn := func() error { return ls.lockBackup(args, &backupReply) }
-    ls.onBackup(backupLockFn)
+    serverArgs               := *args
+    serverArgs.RequestSource = "server"
+    fn := func() error { return ls.lockBackup(&serverArgs, &backupReply) }
+    ls.onBackup(fn)
+
     return nil
 }
 
@@ -127,28 +131,33 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
-    log.Printf("[debug] [%v] Server::Unlock lock (%v) called for server, locks: (%v)\n", ls.name, args, ls.locks)
 
-    var unlockReply UnlockReply
-    fn := func() error { return ls.unlockBackup(args, &unlockReply) }
-    ls.onBackup(fn)
+    source              := args.RequestSource
+    lockname            := args.Lockname
     requestId           := args.RequestId
     duplicateRequest, _ := ls.requestIds[requestId]
-    locked, _           := ls.locks[args.Lockname]
+    locked, _           := ls.locks[lockname]
 
-    log.Printf("[debug] [%v] Server::Unlock current state duplicateRequest(%v) locked(%v)\n", ls.name, duplicateRequest, locked)
+    log.Printf("[debug] [%v] Server::Unlock lock: %v \t source: %#v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
+
     if duplicateRequest && !locked {
         reply.OK = true
         return nil
     }
 
     if locked {
-        ls.locks[args.Lockname]  = false
+        ls.locks[lockname]       = false
         ls.requestIds[requestId] = true
         reply.OK = true
     } else {
         reply.OK = false
     }
+
+    var unlockReply UnlockReply
+    serverArgs               := *args
+    serverArgs.RequestSource = "server"
+    fn := func() error { return ls.unlockBackup(&serverArgs, &unlockReply) }
+    ls.onBackup(fn)
 
     return nil
 }

@@ -15,9 +15,9 @@ import "math/big"
 type LockArgs struct {
   // Go's net/rpc requires that these field
   // names start with upper case letters!
-  Lockname  string  // lock name
-  // unique id
-  RequestId int64
+  Lockname      string  // lock name
+  RequestId     int64   // unique id
+  RequestSource string  // who is making this request
 }
 
 type LockReply struct {
@@ -29,9 +29,9 @@ type LockReply struct {
 // It returns OK=false if the lock was not held.
 //
 type UnlockArgs struct {
-  Lockname string
- //unique identifier
-  RequestId int64
+  Lockname      string
+  RequestId     int64   //unique identifier
+  RequestSource string  // who is making this request
 }
 
 type UnlockReply struct {

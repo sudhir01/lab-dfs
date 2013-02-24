@@ -64,7 +64,7 @@ func callWithFallback(servers []string,
     serverCount := len(servers)
     tries       := 0
 
-    log.Printf("[debug] Client::callWithFallback serverCount(%v)", serverCount)
+    log.Printf("[debug] Client::callWithFallback arguments serverCount: %v \t rpcname: %v \t args: %v", serverCount, rpcname, args)
     for called == false && tries < serverCount {
         server := servers[tries]
         tries += 1
@@ -87,7 +87,7 @@ func callWithFallback(servers []string,
 func (ck *Clerk) Lock(lockname string) bool {
     // prepare the arguments.
     var requestId int64 = randomId()
-    args := &LockArgs{lockname, requestId}
+    args := &LockArgs{lockname, requestId, "client"}
     args.Lockname = lockname
     var reply LockReply
 
@@ -111,7 +111,7 @@ func (ck *Clerk) Lock(lockname string) bool {
 func (ck *Clerk) Unlock(lockname string) bool {
     // prepare the arguments.
     var requestId int64 = randomId()
-    args := &UnlockArgs{lockname, requestId}
+    args := &UnlockArgs{lockname, requestId, "client"}
     var reply UnlockReply
 
     //ask the lock service to unlock
