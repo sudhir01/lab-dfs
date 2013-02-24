@@ -89,7 +89,6 @@ func (server *LockServer) unlockBackup(args  *UnlockArgs,
 //
 func (ls *LockServer) Lock(args  *LockArgs,
                            reply *LockReply) error {
-    log.Printf("[debug] [%v] Server::Lock lock (%v) called for server, locks: (%v)\n", ls.name, args, ls.locks)
     ls.mu.Lock()
     defer ls.mu.Unlock()
 
@@ -99,9 +98,9 @@ func (ls *LockServer) Lock(args  *LockArgs,
     duplicateRequest, _ := ls.requestIds[requestId]
     locked, _           := ls.locks[lockname]
 
-    log.Printf("[debug] [%v] Server::Lock lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
+    log.Printf("[debug] [%v] Server::Lock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
-    if duplicateRequest && locked {
+    if duplicateRequest {
         reply.OK = true
         return nil
     }
@@ -138,9 +137,9 @@ func (ls *LockServer) Unlock(args  *UnlockArgs,
     duplicateRequest, _ := ls.requestIds[requestId]
     locked, _           := ls.locks[lockname]
 
-    log.Printf("[debug] [%v] Server::Unlock lock: %v \t source: %#v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
+    log.Printf("[debug] [%v] Server::Unlock \t lock: %v \t source: %v \t duplicateRequest: %v \t locked: %v \t requestId: %v\n", ls.name, lockname, source, duplicateRequest, locked, requestId)
 
-    if duplicateRequest && !locked {
+    if duplicateRequest {
         reply.OK = true
         return nil
     }
