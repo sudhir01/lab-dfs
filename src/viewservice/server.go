@@ -9,13 +9,11 @@ import "fmt"
 import "os"
 
 type ViewServer struct {
-  mu sync.Mutex
-  l net.Listener
-  dead bool
-  me string
-
-
-  // Your declarations here.
+  mu        sync.Mutex
+  l         net.Listener
+  dead      bool
+  me        string
+  pingTimes map[string] time.Time
 }
 
 //
