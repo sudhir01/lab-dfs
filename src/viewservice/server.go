@@ -15,6 +15,15 @@ type ViewServer struct {
   me          string
   pingTimes   map[string] time.Time
   currentView View
+  primaryAck  bool
+}
+
+func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
+    if vs.currentView.Primary == server {
+        if vs.currentView.Viewnum == viewnum {
+            vs.primaryAck = true
+        }
+    }
 }
 
 //
@@ -24,10 +33,13 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     vs.mu.Lock()
     defer vs.mu.Unlock()
 
+    viewnum              := args.Viewnum
     server               := args.Me
     vs.pingTimes[server] = time.Now()
 
-  return nil
+    vs.updatePrimaryAck(server, viewnum)
+
+    return nil
 }
 
 // 
