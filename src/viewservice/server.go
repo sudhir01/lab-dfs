@@ -23,6 +23,9 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     vs.mu.Lock()
     defer vs.mu.Unlock()
 
+    server               := args.Me
+    vs.pingTimes[server] = time.Now()
+
   return nil
 }
 
