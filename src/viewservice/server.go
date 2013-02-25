@@ -59,8 +59,8 @@ func (vs *ViewServer) Kill() {
 
 func StartServer(me string) *ViewServer {
   vs := new(ViewServer)
-  vs.me = me
-  // Your vs.* initializations here.
+  vs.me        = me
+  vs.pingTimes = map[string] time.Time{}
 
   // tell net/rpc about our RPC server and handlers.
   rpcs := rpc.NewServer()
