@@ -18,10 +18,15 @@ type ViewServer struct {
   primaryAck  bool
 }
 
+/**
+* Keep track of the fact that a server has acknowledged the current view
+*/
 func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
     if vs.currentView.Primary == server {
         if vs.currentView.Viewnum == viewnum {
             vs.primaryAck = true
+        } else {
+            vs.primaryAck = false
         }
     }
 }
