@@ -9,21 +9,23 @@ import "fmt"
 import "os"
 
 type ViewServer struct {
-  mu sync.Mutex
-  l net.Listener
-  dead bool
-  me string
-
-
-  // Your declarations here.
+  mu          sync.Mutex
+  l           net.Listener
+  dead        bool
+  me          string
+  pingTimes   map[string] time.Time
+  currentView View
 }
 
 //
 // server Ping RPC handler.
 //
 func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
+    vs.mu.Lock()
+    defer vs.mu.Unlock()
 
-  // Your code here.
+    server               := args.Me
+    vs.pingTimes[server] = time.Now()
 
   return nil
 }
@@ -61,8 +63,9 @@ func (vs *ViewServer) Kill() {
 
 func StartServer(me string) *ViewServer {
   vs := new(ViewServer)
-  vs.me = me
-  // Your vs.* initializations here.
+  vs.me          = me
+  vs.pingTimes   = map[string] time.Time{}
+  vs.currentView = View{0, "", ""}
 
   // tell net/rpc about our RPC server and handlers.
   rpcs := rpc.NewServer()
