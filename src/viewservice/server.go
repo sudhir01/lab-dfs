@@ -20,8 +20,8 @@ type ViewServer struct {
 // server Ping RPC handler.
 //
 func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
-
-  // Your code here.
+    vs.mu.Lock()
+    defer vs.mu.Unlock()
 
   return nil
 }
