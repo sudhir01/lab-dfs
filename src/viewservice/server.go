@@ -17,9 +17,7 @@ type ViewServer struct {
   currentView View //TODO - add logic for current view
 }
 
-/**
-* Keep track of the fact that a server has acknowledged the current view
-*/
+// Keep track of primary's acknowledgement of the current view
 func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
     if vs.currentView.Primary == server {
         if vs.currentView.Viewnum == viewnum {
