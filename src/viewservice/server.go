@@ -81,8 +81,7 @@ func StartServer(me string) *ViewServer {
   vs := new(ViewServer)
   vs.me          = me
   vs.pingTimes   = map[string] time.Time{}
-  vs.currentView = View{0, "", "", false}
-  //vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, false}
+  vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, false}
 
   // tell net/rpc about our RPC server and handlers.
   rpcs := rpc.NewServer()

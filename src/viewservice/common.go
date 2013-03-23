@@ -33,6 +33,11 @@ import "time"
 // a time.
 //
 
+type Server string
+
+const NO_SERVER    string = ""
+const INITIAL_VIEW uint   = 0
+
 type View struct {
   Viewnum    uint
   Primary    string
