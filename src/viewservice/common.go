@@ -34,9 +34,10 @@ import "time"
 //
 
 type View struct {
-  Viewnum uint
-  Primary string
-  Backup  string
+  Viewnum    uint
+  Primary    string
+  Backup     string
+  PrimaryAck bool
 }
 
 // clients should send a Ping RPC this often,

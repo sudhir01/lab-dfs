@@ -14,8 +14,7 @@ type ViewServer struct {
   dead        bool
   me          string
   pingTimes   map[string] time.Time
-  currentView View
-  primaryAck  bool
+  currentView View //TODO - add logic for current view
 }
 
 /**
@@ -24,9 +23,9 @@ type ViewServer struct {
 func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
     if vs.currentView.Primary == server {
         if vs.currentView.Viewnum == viewnum {
-            vs.primaryAck = true
+            vs.currentView.PrimaryAck = true
         } else {
-            vs.primaryAck = false
+            vs.currentView.PrimaryAck = false
         }
     }
 }
@@ -82,7 +81,8 @@ func StartServer(me string) *ViewServer {
   vs := new(ViewServer)
   vs.me          = me
   vs.pingTimes   = map[string] time.Time{}
-  vs.currentView = View{0, "", ""}
+  vs.currentView = View{0, "", "", false}
+  //vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, false}
 
   // tell net/rpc about our RPC server and handlers.
   rpcs := rpc.NewServer()
