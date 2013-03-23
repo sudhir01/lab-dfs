@@ -18,14 +18,18 @@ type ViewServer struct {
 }
 
 // Keep track of primary's acknowledgement of the current view
-func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
+func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) bool {
+    updated := false
     if vs.currentView.Primary == server {
         if vs.currentView.Viewnum == viewnum {
             vs.currentView.PrimaryAck = true
+            updated = true
         } else {
+            //view and primary have drifted
             vs.currentView.PrimaryAck = false
         }
     }
+    return updated
 }
 
 func (vs *ViewServer) hasPrimaryAck() bool {
