@@ -28,6 +28,9 @@ func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) {
     }
 }
 
+func (vs *ViewServer) hasPrimaryAck() bool {
+    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.PrimaryAck)
+}
 //
 // server Ping RPC handler.
 //
