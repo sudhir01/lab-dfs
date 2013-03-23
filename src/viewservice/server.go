@@ -35,9 +35,9 @@ func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) bool {
 func (vs *ViewServer) hasPrimaryAck() bool {
     return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.PrimaryAck)
 }
-//
+
 // server Ping RPC handler.
-//
+// If ping payload is 0, then the server crashed -> TODO
 func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     vs.mu.Lock()
     defer vs.mu.Unlock()
@@ -62,11 +62,14 @@ func (vs *ViewServer) Get(args *GetArgs, reply *GetReply) error {
 }
 
 
-//
 // tick() is called once per PingInterval; it should notice
 // if servers have died or recovered, and change the view
 // accordingly.
-//
+// Periodic tasks on ping:
+//    1. Mark server dead if max DeadPings have passed for PingIntervals
+//    2. Update view for either (only if primary has not drifted):
+//       i.  dead server or                      -> TODO
+//       ii. idle server when there is no backup -> TODO
 func (vs *ViewServer) tick() {
 
   // Your code here.
