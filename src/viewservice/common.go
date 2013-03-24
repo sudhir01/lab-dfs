@@ -39,10 +39,11 @@ const NO_SERVER    string = ""
 const INITIAL_VIEW uint   = 0
 
 type View struct {
-  Viewnum    uint
-  Primary    string
-  Backup     string
-  PrimaryAck bool
+  Viewnum     uint
+  Primary     string
+  Backup      string
+  primaryView uint
+  backupView  uint
 }
 
 // clients should send a Ping RPC this often,

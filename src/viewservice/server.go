@@ -17,23 +17,8 @@ type ViewServer struct {
   currentView View //TODO - add logic for current view
 }
 
-// Keep track of primary's acknowledgement of the current view
-func (vs *ViewServer) updatePrimaryAck(server string, viewnum uint) bool {
-    updated := false
-    if vs.currentView.Primary == server {
-        if vs.currentView.Viewnum == viewnum {
-            vs.currentView.PrimaryAck = true
-            updated = true
-        } else {
-            //view and primary have drifted
-            vs.currentView.PrimaryAck = false
-        }
-    }
-    return updated
-}
-
 func (vs *ViewServer) hasPrimaryAck() bool {
-    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.PrimaryAck)
+    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.primaryView == vs.currentView.Viewnum)
 }
 
 // server Ping RPC handler.
@@ -46,8 +31,14 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     server               := args.Me
     vs.pingTimes[server] = time.Now()
 
-    vs.updatePrimaryAck(server, viewnum)
+    switch server {
+    case vs.currentView.Primary:
+        vs.currentView.primaryView = viewnum
+    case vs.currentView.Backup:
+        vs.currentView.backupView  = viewnum
+    }
 
+    //TODO reply with current view
     return nil
 }
 
