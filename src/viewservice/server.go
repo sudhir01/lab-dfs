@@ -38,7 +38,7 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
         vs.currentView.backupView  = viewnum
     }
 
-    //TODO reply with current view
+    reply.View = vs.currentView
     return nil
 }
 
@@ -80,7 +80,7 @@ func StartServer(me string) *ViewServer {
   vs := new(ViewServer)
   vs.me          = me
   vs.pingTimes   = map[string] time.Time{}
-  vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, false}
+  vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 
   // tell net/rpc about our RPC server and handlers.
   rpcs := rpc.NewServer()
