@@ -42,8 +42,8 @@ type View struct {
   Viewnum     uint
   Primary     string
   Backup      string
-  primaryView uint
-  backupView  uint
+  PrimaryView uint
+  BackupView  uint
 }
 
 // clients should send a Ping RPC this often,

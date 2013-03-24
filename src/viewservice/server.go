@@ -18,7 +18,7 @@ type ViewServer struct {
 }
 
 func (vs *ViewServer) hasPrimaryAck() bool {
-    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.primaryView == vs.currentView.Viewnum)
+    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.PrimaryView == vs.currentView.Viewnum)
 }
 
 // server Ping RPC handler.
@@ -33,9 +33,9 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
 
     switch server {
     case vs.currentView.Primary:
-        vs.currentView.primaryView = viewnum
+        vs.currentView.PrimaryView = viewnum
     case vs.currentView.Backup:
-        vs.currentView.backupView  = viewnum
+        vs.currentView.BackupView  = viewnum
     }
 
     reply.View = vs.currentView
