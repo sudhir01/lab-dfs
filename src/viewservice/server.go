@@ -14,7 +14,7 @@ type ViewServer struct {
   dead        bool
   me          string
   pingTimes   map[string] time.Time
-  currentView View //TODO - add logic for current view
+  currentView View
 }
 
 func (vs *ViewServer) hasPrimaryAck() bool {
@@ -22,7 +22,7 @@ func (vs *ViewServer) hasPrimaryAck() bool {
 }
 
 // server Ping RPC handler.
-// If ping payload is 0, then the server crashed -> TODO
+// If ping payload is 0, then the server crashed
 func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     vs.mu.Lock()
     defer vs.mu.Unlock()
