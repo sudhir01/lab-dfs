@@ -52,6 +52,17 @@ func (vs *ViewServer) Get(args *GetArgs, reply *GetReply) error {
   return nil
 }
 
+func elapsedDeadPings(lastPing time.Time) int64 {
+    now   := time.Now()
+    delta := now.Sub(lastPing)
+    return int64(delta/PingInterval)
+    //milli := (delta.Nanoseconds()/1000)
+    //pings := milli / (PingInterval.Nanoseconds()/1000)
+    //return pings
+}
+
+func (vs *ViewServer) markDeadServers() {
+}
 
 // tick() is called once per PingInterval; it should notice
 // if servers have died or recovered, and change the view
