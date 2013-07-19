@@ -1,0 +1,42 @@
+# Tasks
+
+- During a view, make sure that primary is primary or the backup from the previous view
+    - except when the view server has started, any server can be primary then
+- any server can be the backup, except the primary
+- there can be no backup in a view
+- Pinging - each KV server sends a ping per pingInterval, with the last view it had seen
+    - viewservice replies with the current view
+    - mark KV server as 'dead' after not receiving a ping for DeadPings PingIntervals
+    - A ping with 0 means that the KV store crashed and has re-booted (there can be multiple such pings)
+- Change view when
+    - primary or backup is dead
+    - OR there is a new idle server AND no backup server
+    - UNLESS primary from current view does not ACK that it is in the same view as the viewserver
+        - even if primary/backup is dead
+
+Overall Goal:
+- Primary misses updates to Backup when Primary is down
+- repairs on recovery
+
+View Service:
+- numbered sequenced views with primary and backup if present
+- view: {number, primary port, backup ports}
+- Vn.primary = V(n-1).primary || Vn.primary = V(n-1).backup || V0.primary = ANY (view service starts)
+- monitor server.state
+- replace server when server dies
+- client asks view service for primary
+- only 1 primary
+- won't fail
+- on ping:
+- serverPort, viewnum <- pingPayload
+- mark server dead after DeadPings PingIntervals
+- if pingPayload = 0 then server restarted
+- return current view number to server
+- don't change view till primary is in the same view, even if primary.state = dead || backup.state = dead
+
+DB Server:
+- ping(server_id, lastViewNumber) viewservice once per PingInterval
+- in memory
+- concurrency: 1
+- on recovery:
+- copy db from primary

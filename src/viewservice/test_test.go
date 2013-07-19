@@ -4,8 +4,6 @@ import "testing"
 import "runtime"
 import "time"
 import "fmt"
-import "os"
-import "strconv"
 
 func check(t *testing.T, ck *Clerk, p string, b string, n uint) {
   view, _ := ck.Get()
@@ -23,25 +21,15 @@ func check(t *testing.T, ck *Clerk, p string, b string, n uint) {
   }
 }
 
-func port(suffix string) string {
-  s := "/var/tmp/824-"
-  s += strconv.Itoa(os.Getuid()) + "/"
-  os.Mkdir(s, 0777)
-  s += "viewserver-" 
-  s += strconv.Itoa(os.Getpid()) + "-"
-  s += suffix
-  return s
-}
-
 func Test1(t *testing.T) {
   runtime.GOMAXPROCS(4)
 
-  vshost := port("v")
+  vshost := Port("v")
   vs := StartServer(vshost)
 
-  ck1 := MakeClerk(port("1"), vshost)
-  ck2 := MakeClerk(port("2"), vshost)
-  ck3 := MakeClerk(port("3"), vshost)
+  ck1 := MakeClerk(Port("1"), vshost)
+  ck2 := MakeClerk(Port("2"), vshost)
+  ck3 := MakeClerk(Port("3"), vshost)
 
   //
 
