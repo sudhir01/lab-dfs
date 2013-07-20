@@ -36,14 +36,15 @@ import "time"
 type Server string
 
 const NO_SERVER    string = ""
-const INITIAL_VIEW uint   = 0
+const INITIAL_VIEW int    = 0
+const NO_VIEW      int    = -1
 
 type View struct {
-  Viewnum     uint
+  Viewnum     int
   Primary     string
   Backup      string
-  PrimaryView uint
-  BackupView  uint
+  PrimaryView int
+  BackupView  int
 }
 
 // clients should send a Ping RPC this often,
@@ -66,7 +67,7 @@ const DeadPings = 5
 
 type PingArgs struct {
   Me string     // "host:port"
-  Viewnum uint  // caller's notion of current view #
+  Viewnum int  // caller's notion of current view #
 }
 
 type PingReply struct {

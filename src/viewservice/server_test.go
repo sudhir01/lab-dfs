@@ -3,11 +3,48 @@ package viewservice
 import "testing"
 // import "runtime"
 // import "time"
-// import "fmt"
+import "fmt"
 // import "os"
 
 func Test_init_view_server(t *testing.T) {
-    t.FailNow()
+    hostPort := Port("v")
+
+    noserver, err := NewViewServer("")
+    if noserver != nil {
+        t.Fatalf("Server was created when no hostname was provided\n")
+    }
+
+    if err == nil {
+        t.Fatalf("Error message not returned for invalid server initialization parameters\n")
+    }
+
+    server,err := NewViewServer(hostPort)
+    if server == nil || err != nil {
+        t.Fatalf("Could not initialize view server. Got error %s\n", err.Error())
+    }
+
+    if server.IsDead() {
+        t.Fatalf("New server marked dead\n", err.Error())
+    }
+
+    if server.Name() != hostPort {
+        t.Fatalf("Server was not initialzied with host name: [%s]\n", hostPort)
+    }
+
+    if server.ListenerAddress() != hostPort {
+        t.Fatalf("Server is not listening on the host port [%s]\n", hostPort)
+    }
+
+    expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
+    actualView   := server.View()
+    if actualView != expectedView {
+        t.Fatalf("Server was not initialized with expectedView [+%v], got view [+%v]\n", expectedView, actualView)
+    }
+
+    pingTable := server.PingTable()
+    if pingTable == nil || *pingTable == nil || len(*pingTable) != 0 {
+        t.Fatalf("Server's ping table is not empty, pingTable [+%v]\n", pingTable)
+    }
 }
 
 func Test_first_view(t *testing.T) {

@@ -50,7 +50,7 @@ func call(srv string, rpcname string,
   return false
 }
 
-func (ck *Clerk) Ping(viewnum uint) (View, error) {
+func (ck *Clerk) Ping(viewnum int) (View, error) {
   // prepare the arguments.
   args := &PingArgs{}
   args.Me = ck.me

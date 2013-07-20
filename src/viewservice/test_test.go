@@ -5,7 +5,7 @@ import "runtime"
 import "time"
 import "fmt"
 
-func check(t *testing.T, ck *Clerk, p string, b string, n uint) {
+func check(t *testing.T, ck *Clerk, p string, b string, n int) {
   view, _ := ck.Get()
   if view.Primary != p {
     t.Fatalf("wanted primary %v, got %v", p, view.Primary)

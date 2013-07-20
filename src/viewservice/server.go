@@ -1,5 +1,6 @@
 package viewservice
 
+import "errors"
 import "net"
 import "net/rpc"
 import "log"
@@ -15,6 +16,26 @@ type ViewServer struct {
   me          string
   pingTimes   map[string] time.Time
   currentView View
+}
+
+func (vs *ViewServer) IsDead() bool {
+    return vs.dead
+}
+
+func (vs *ViewServer) Name() string {
+    return vs.me;
+}
+
+func (vs *ViewServer) ListenerAddress() string {
+    return vs.l.Addr().String()
+}
+
+func (vs *ViewServer) View() *View {
+    return &vs.currentView
+}
+
+func (vs *ViewServer) PingTable() *map[string] time.Time {
+    return &vs.pingTimes
 }
 
 func (vs *ViewServer) hasPrimaryAck() bool {
@@ -87,8 +108,18 @@ func (vs *ViewServer) Kill() {
   vs.l.Close()
 }
 
+func NewViewServer(hostPort string) (*ViewServer, error) {
+    if hostPort == "" {
+        return nil, errors.New("hostPort cannot be nil")
+    }
+    //TODO - add implementation
+    return nil, nil
+}
+
 func StartServer(me string) *ViewServer {
+    //TODO - replace with NewViewServer
   vs := new(ViewServer)
+
   vs.me          = me
   vs.pingTimes   = map[string] time.Time{}
   vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
