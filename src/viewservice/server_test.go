@@ -3,7 +3,7 @@ package viewservice
 import "testing"
 // import "runtime"
 // import "time"
-import "fmt"
+// import "fmt"
 // import "os"
 
 func Test_init_view_server(t *testing.T) {
@@ -18,8 +18,12 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    server,err := NewViewServer(hostPort)
-    if server == nil || err != nil {
+    server, err := NewViewServer(hostPort)
+    if server == nil {
+        t.Fatalf("Could not initialize view server. Server reference is nil\n")
+    }
+
+    if err != nil {
         t.Fatalf("Could not initialize view server. Got error %s\n", err.Error())
     }
 

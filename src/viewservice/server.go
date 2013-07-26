@@ -110,7 +110,8 @@ func (vs *ViewServer) Kill() {
 
 func NewViewServer(hostPort string) (*ViewServer, error) {
     if hostPort == "" {
-        return nil, errors.New("hostPort cannot be nil")
+        err := errors.New("hostPort cannot be nil")
+        return nil, err
     }
     //TODO - add implementation
     return nil, nil
