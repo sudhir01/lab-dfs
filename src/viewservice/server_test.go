@@ -1,6 +1,7 @@
 package viewservice
 
 import "testing"
+import "net/rpc"
 // import "runtime"
 // import "time"
 // import "fmt"
@@ -9,7 +10,7 @@ import "testing"
 func Test_init_view_server(t *testing.T) {
     hostPort := Port("v")
 
-    noserver, err := NewViewServer("")
+    noserver, err := NewViewServer("", nil)
     if noserver != nil {
         t.Fatalf("Server was created when no hostname was provided\n")
     }
@@ -18,7 +19,8 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    server, err := NewViewServer(hostPort)
+    rpcServer   := rpc.NewServer()
+    server, err := NewViewServer(hostPort, rpcServer)
     if server == nil {
         t.Fatalf("Could not initialize view server. Server reference is nil\n")
     }

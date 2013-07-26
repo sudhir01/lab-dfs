@@ -9,7 +9,7 @@ import "sync"
 import "os"
 
 type ViewServer struct {
-  rpcs        *rpc.Server
+  rpcServer   *rpc.Server
   mu          sync.Mutex
   l           net.Listener
   dead        bool
@@ -115,7 +115,7 @@ func (vs *ViewServer) Kill() {
   vs.l.Close()
 }
 
-func NewViewServer(hostPort string) (*ViewServer, error) {
+func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) {
     if hostPort == "" {
         err := errors.New("hostPort cannot be nil")
         return nil, err
@@ -125,6 +125,7 @@ func NewViewServer(hostPort string) (*ViewServer, error) {
     vs.me          = hostPort
     vs.pingTimes   = map[string] time.Time{}
     vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
+    vs.rpcServer   = rpcServer
     return vs, nil
 }
 
@@ -147,15 +148,15 @@ func (vs *ViewServer) openPort() {
 }
 
 func (vs *ViewServer) registerRPCServer() {
-    vs.rpcs = rpc.NewServer()
-    vs.rpcs.Register(vs)
+    vs.rpcServer = rpc.NewServer()
+    vs.rpcServer.Register(vs)
 }
 
 func (vs *ViewServer) startConnectionAcceptor() {
     for vs.dead == false {
         conn, err := vs.l.Accept()
         if err == nil && vs.dead == false {
-            go vs.rpcs.ServeConn(conn)
+            go vs.rpcServer.ServeConn(conn)
         } else if err == nil {
             conn.Close()
         }
@@ -174,7 +175,8 @@ func (vs *ViewServer) startTicker() {
 }
 
 func StartServer(me string) *ViewServer {
-    vs, _ := NewViewServer(me)
+    rpc   := rpc.NewServer()
+    vs, _ := NewViewServer(me, rpc)
     vs.Start()
     return vs
 }
