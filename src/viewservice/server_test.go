@@ -32,6 +32,7 @@ func Test_init_view_server(t *testing.T) {
     }
 
     server.Start()
+
     if server.IsDead() {
         t.Fatalf("New server marked dead\n", err.Error())
     }

@@ -175,14 +175,7 @@ func (vs *ViewServer) startTicker() {
 }
 
 func StartServer(me string) *ViewServer {
-    //TODO - replace with NewViewServer
-  vs, _ := NewViewServer(me)
-
-  vs.Start()
-  // please don't change any of the following code,
-  // or do anything to subvert it.
-
-  // create a thread to accept RPC connections from clients.
-  // create a thread to call tick() periodically.
-  return vs
+    vs, _ := NewViewServer(me)
+    vs.Start()
+    return vs
 }
