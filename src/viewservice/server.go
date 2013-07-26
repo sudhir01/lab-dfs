@@ -124,7 +124,7 @@ func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) 
 
     vs.me          = hostPort
     vs.pingTimes   = map[string] time.Time{}
-    vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
+    vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
     vs.rpcServer   = rpcServer
     return vs, nil
 }
