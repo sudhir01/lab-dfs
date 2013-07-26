@@ -10,12 +10,17 @@ import "fmt"
 import "os"
 
 type ViewServer struct {
+  rpcs        *rpc.Server
   mu          sync.Mutex
   l           net.Listener
   dead        bool
   me          string
   pingTimes   map[string] time.Time
   currentView View
+}
+
+func (vs *ViewServer) IsListening() bool {
+    return vs.l == nil
 }
 
 func (vs *ViewServer) IsDead() bool {
@@ -27,6 +32,9 @@ func (vs *ViewServer) Name() string {
 }
 
 func (vs *ViewServer) ListenerAddress() string {
+    if vs.l == nil {
+        return ""
+    }
     return vs.l.Addr().String()
 }
 
@@ -113,57 +121,68 @@ func NewViewServer(hostPort string) (*ViewServer, error) {
         err := errors.New("hostPort cannot be nil")
         return nil, err
     }
-    //TODO - add implementation
-    return nil, nil
+    vs := new(ViewServer)
+
+    vs.me          = hostPort
+    vs.pingTimes   = map[string] time.Time{}
+    vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
+    return vs, nil
+}
+
+func (vs *ViewServer) Start() {
+    vs.registerRPCServer()
+    vs.openPort()
+    go vs.startConnectionAcceptor()
+    go vs.startTicker()
+}
+
+func (vs *ViewServer) openPort() {
+    // prepare to receive connections from clients.
+    // change "unix" to "tcp" to use over a network.
+    os.Remove(vs.me) // only needed for "unix"
+    l, e := net.Listen("unix", vs.me);
+    if e != nil {
+        log.Fatal("listen error: ", e);
+    }
+    vs.l = l
+}
+
+func (vs *ViewServer) registerRPCServer() {
+    vs.rpcs = rpc.NewServer()
+    vs.rpcs.Register(vs)
+}
+
+func (vs *ViewServer) startConnectionAcceptor() {
+    for vs.dead == false {
+        conn, err := vs.l.Accept()
+        if err == nil && vs.dead == false {
+            go vs.rpcs.ServeConn(conn)
+        } else if err == nil {
+            conn.Close()
+        }
+        if err != nil && vs.dead == false {
+            fmt.Printf("ViewServer(%v) accept: %v\n", vs.me, err.Error())
+            vs.Kill()
+        }
+    }
+}
+
+func (vs *ViewServer) startTicker() {
+    for vs.dead == false {
+        vs.tick()
+        time.Sleep(PingInterval)
+    }
 }
 
 func StartServer(me string) *ViewServer {
     //TODO - replace with NewViewServer
-  vs := new(ViewServer)
+  vs, _ := NewViewServer(me)
 
-  vs.me          = me
-  vs.pingTimes   = map[string] time.Time{}
-  vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
-
-  // tell net/rpc about our RPC server and handlers.
-  rpcs := rpc.NewServer()
-  rpcs.Register(vs)
-
-  // prepare to receive connections from clients.
-  // change "unix" to "tcp" to use over a network.
-  os.Remove(vs.me) // only needed for "unix"
-  l, e := net.Listen("unix", vs.me);
-  if e != nil {
-    log.Fatal("listen error: ", e);
-  }
-  vs.l = l
-
+  vs.Start()
   // please don't change any of the following code,
   // or do anything to subvert it.
 
   // create a thread to accept RPC connections from clients.
-  go func() {
-    for vs.dead == false {
-      conn, err := vs.l.Accept()
-      if err == nil && vs.dead == false {
-        go rpcs.ServeConn(conn)
-      } else if err == nil {
-        conn.Close()
-      }
-      if err != nil && vs.dead == false {
-        fmt.Printf("ViewServer(%v) accept: %v\n", me, err.Error())
-        vs.Kill()
-      }
-    }
-  }()
-
   // create a thread to call tick() periodically.
-  go func() {
-    for vs.dead == false {
-      vs.tick()
-      time.Sleep(PingInterval)
-    }
-  }()
-
   return vs
 }

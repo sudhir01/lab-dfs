@@ -27,6 +27,11 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Could not initialize view server. Got error %s\n", err.Error())
     }
 
+    if server.IsListening() == true {
+        t.Fatalf("New server is listening before starting the server\n")
+    }
+
+    server.Start()
     if server.IsDead() {
         t.Fatalf("New server marked dead\n", err.Error())
     }
@@ -35,8 +40,9 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Server was not initialzied with host name: [%s]\n", hostPort)
     }
 
-    if server.ListenerAddress() != hostPort {
-        t.Fatalf("Server is not listening on the host port [%s]\n", hostPort)
+    listenerAddr := server.ListenerAddress()
+    if listenerAddr != hostPort {
+        t.Fatalf("Server is not listening on the host port expected[%s], actual [%s]\n", hostPort, listenerAddr)
     }
 
     expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
