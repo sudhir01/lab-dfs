@@ -10,6 +10,7 @@ import "net/rpc"
 func Test_init_view_server(t *testing.T) {
     hostPort := Port("v")
 
+    //TODO - add a test where the RPC server is nil,but not the host port
     noserver, err := NewViewServer("", nil)
     if noserver != nil {
         t.Fatalf("Server was created when no hostname was provided\n")

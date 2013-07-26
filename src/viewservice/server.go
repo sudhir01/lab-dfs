@@ -120,6 +120,12 @@ func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) 
         err := errors.New("hostPort cannot be nil")
         return nil, err
     }
+
+    if rpcServer == nil {
+        err := errors.New("RPC server cannot be nil")
+        return nil, err
+    }
+
     vs := new(ViewServer)
 
     vs.me          = hostPort
