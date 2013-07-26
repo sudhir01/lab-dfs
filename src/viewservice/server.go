@@ -19,7 +19,7 @@ type ViewServer struct {
 }
 
 func (vs *ViewServer) IsListening() bool {
-    return vs.l == nil
+    return vs.l != nil
 }
 
 func (vs *ViewServer) IsDead() bool {
