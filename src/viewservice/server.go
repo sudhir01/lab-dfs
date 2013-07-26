@@ -6,7 +6,6 @@ import "net/rpc"
 import "log"
 import "time"
 import "sync"
-import "fmt"
 import "os"
 
 type ViewServer struct {
@@ -161,7 +160,7 @@ func (vs *ViewServer) startConnectionAcceptor() {
             conn.Close()
         }
         if err != nil && vs.dead == false {
-            fmt.Printf("ViewServer(%v) accept: %v\n", vs.me, err.Error())
+            log.Print("ViewServer(%v) accept: %v\n", vs.me, err.Error())
             vs.Kill()
         }
     }
