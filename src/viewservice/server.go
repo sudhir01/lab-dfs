@@ -148,7 +148,6 @@ func (vs *ViewServer) openPort() {
 }
 
 func (vs *ViewServer) registerRPCServer() {
-    vs.rpcServer = rpc.NewServer()
     vs.rpcServer.Register(vs)
 }
 
