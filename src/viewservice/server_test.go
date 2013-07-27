@@ -8,10 +8,10 @@ import "net/rpc"
 // import "os"
 
 func Test_init_view_server(t *testing.T) {
-    hostPort := Port("v")
+    hostPort    := Port("v")
+    rpcServer   := rpc.NewServer()
 
-    //TODO - add a test where the RPC server is nil,but not the host port
-    noserver, err := NewViewServer("", nil)
+    noserver, err := NewViewServer("", rpcServer)
     if noserver != nil {
         t.Fatalf("Server was created when no hostname was provided\n")
     }
@@ -20,7 +20,15 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    rpcServer   := rpc.NewServer()
+    noserver, err = NewViewServer("test-port", nil)
+    if noserver != nil {
+        t.Fatalf("ViewServer was created when the RPC server was nil\n")
+    }
+
+    if err == nil {
+        t.Fatalf("NewViewServer did not return an error code when the RPC server was nil\n")
+    }
+
     server, err := NewViewServer(hostPort, rpcServer)
     if server == nil {
         t.Fatalf("Could not initialize view server. Server reference is nil\n")
