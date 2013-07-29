@@ -42,6 +42,11 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("New server is listening before starting the server\n")
     }
 
+    //FIXME - figure out how to extend struct in different package
+    //if rpcServer.IsRegistered("server") == true {
+    //    t.Fatalf("RPC server does not have the ViewServer registered\n")
+    //}
+
     server.Start()
 
     if server.IsListening() != true {
@@ -61,7 +66,6 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Server is not listening on the host port expected[%s], actual [%s]\n", hostPort, listenerAddr)
     }
 
-    //TODO - add test to ensure that ViewServer is registered with the RPC server
     //TODO - add a test to ensure that the connection acceptor is running
     //TODO - add a test to ensure that the ticker is running
     expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
