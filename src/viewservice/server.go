@@ -27,7 +27,7 @@ func (vs *ViewServer) IsDead() bool {
 }
 
 func (vs *ViewServer) Name() string {
-    return vs.me;
+    return vs.me
 }
 
 func (vs *ViewServer) ListenerAddress() string {
@@ -146,9 +146,9 @@ func (vs *ViewServer) openPort() {
     // prepare to receive connections from clients.
     // change "unix" to "tcp" to use over a network.
     os.Remove(vs.me) // only needed for "unix"
-    l, e := net.Listen("unix", vs.me);
+    l, e := net.Listen("unix", vs.me)
     if e != nil {
-        log.Fatal("listen error: ", e);
+        log.Fatal("listen error: ", e)
     }
     vs.l = l
 }
