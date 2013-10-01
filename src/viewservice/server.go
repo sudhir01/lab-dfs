@@ -117,7 +117,7 @@ func (vs *ViewServer) Kill() {
 
 func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) {
     if hostPort == "" {
-        err := errors.New("hostPort cannot be nil")
+        err := errors.New("hostPort cannot be empty")
         return nil, err
     }
 
