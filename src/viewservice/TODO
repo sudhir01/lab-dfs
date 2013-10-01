@@ -1,5 +1,14 @@
 # Tasks
 
+## Server
+
+### Initialization
+
+- Move the RPC handler to a separate struct
+
+- The Server Factory should create a server with a rpc server and server handler
+
+# Overall notes
 - During a view, make sure that primary is primary or the backup from the previous view
     - except when the view server has started, any server can be primary then
 - any server can be the backup, except the primary
