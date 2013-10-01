@@ -157,11 +157,15 @@ func (vs *ViewServer) registerRPCServer() {
     vs.rpcServer.Register(vs)
 }
 
+func (vs *ViewServer) dispatch(conn net.Conn) {
+	 go vs.rpcServer.ServeConn(conn)
+}
+
 func (vs *ViewServer) startConnectionAcceptor() {
     for vs.dead == false {
         conn, err := vs.l.Accept()
         if err == nil && vs.dead == false {
-            go vs.rpcServer.ServeConn(conn)
+				vs.dispatch(conn)
         } else if err == nil {
             conn.Close()
         }

@@ -2,6 +2,7 @@ package viewservice
 
 import "testing"
 import "net/rpc"
+import "reflect"
 
 // import "runtime"
 // import "time"
@@ -71,7 +72,7 @@ func Test_init_view_server(t *testing.T) {
     //TODO - add a test to ensure that the ticker is running
     expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
     actualView   := server.View()
-    if actualView != expectedView {
+    if reflect.DeepEqual(actualView, expectedView) == false {
         t.Fatalf("Server was not initialized with expectedView [+%v], got view [+%v]\n", expectedView, actualView)
     }
 
