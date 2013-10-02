@@ -4,11 +4,6 @@ import "testing"
 import "net/rpc"
 import "reflect"
 
-// import "runtime"
-// import "time"
-// import "fmt"
-// import "os"
-
 func Test_init_view_server(t *testing.T) {
     hostPort    := Port("v")
     rpcServer   := rpc.NewServer()
