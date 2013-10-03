@@ -16,6 +16,7 @@ type ViewServer struct {
   me          string
   pingTimes   map[string] time.Time
   currentView View
+  handler     ServerHandler
 }
 
 func (vs *ViewServer) IsListening() bool {
@@ -70,16 +71,6 @@ func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
     return nil
 }
 
-// 
-// server Get() RPC handler.
-//
-func (vs *ViewServer) Get(args *GetArgs, reply *GetReply) error {
-
-  // Your code here.
-
-  return nil
-}
-
 func elapsedDeadPings(lastPing time.Time) int64 {
     now   := time.Now()
     delta := now.Sub(lastPing)
@@ -115,7 +106,7 @@ func (vs *ViewServer) Kill() {
   vs.l.Close()
 }
 
-func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) {
+func NewViewServer(hostPort string, rpcServer *rpc.Server, handler ServerHandler) (*ViewServer, error) {
     if hostPort == "" {
         err := errors.New("hostPort cannot be empty")
         return nil, err
@@ -126,17 +117,24 @@ func NewViewServer(hostPort string, rpcServer *rpc.Server) (*ViewServer, error) 
         return nil, err
     }
 
+	 if handler == nil {
+		  err := errors.New("Server handler cannot be nil")
+		  return nil, err
+	 }
+
     vs := new(ViewServer)
 
     vs.me          = hostPort
     vs.pingTimes   = map[string] time.Time{}
     vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
     vs.rpcServer   = rpcServer
+	 vs.handler     = handler
     return vs, nil
 }
 
 func (vs *ViewServer) Start() {
-    vs.registerRPCServer()
+	 //FIXME - cannot register methods that are not valid
+    //vs.registerRPCServer()
     vs.openPort()
     go vs.startConnectionAcceptor()
     go vs.startTicker()
@@ -184,8 +182,9 @@ func (vs *ViewServer) startTicker() {
 }
 
 func StartServer(me string) *ViewServer {
-    rpc   := rpc.NewServer()
-    vs, _ := NewViewServer(me, rpc)
+    rpc     := rpc.NewServer()
+	 handler := new(ViewServerHandler)
+    vs, _ := NewViewServer(me, rpc, handler)
     vs.Start()
     return vs
 }

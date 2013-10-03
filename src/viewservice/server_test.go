@@ -1,14 +1,37 @@
 package viewservice
 
+import "log"
 import "testing"
 import "net/rpc"
 import "reflect"
 
+//TODO - change the reply from the default empty reply
+func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
+	 hostPort  := Port("v")
+	 rpcServer := rpc.NewServer()
+	 handler   := new(TestServerHandler)
+	 server, _ := NewViewServer(hostPort, rpcServer, handler)
+
+	 server.Start()
+	 clnt, errx := rpc.Dial("unix", hostPort)
+	 if errx != nil {
+		  t.Fatalf("Unable to establish a connection wit the server %s, got error %s\n", hostPort, errx.Error())
+	 }
+	 defer clnt.Close()
+	 getReply := new(GetReply)
+	 getArgs  := new(GetArgs)
+
+	 clnt.Call("Get", getArgs, getReply)
+	 log.Printf("Server responded with %+v for TestConnection\n", getReply)
+
+}
+
 func Test_init_view_server(t *testing.T) {
     hostPort    := Port("v")
     rpcServer   := rpc.NewServer()
+	 handler     := new(ViewServerHandler)
 
-    noServer, err := NewViewServer("", rpcServer)
+    noServer, err := NewViewServer("", rpcServer, handler)
     if noServer != nil {
         t.Fatalf("Server was created when no hostname was provided\n")
     }
@@ -17,7 +40,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    noServer, err = NewViewServer("test-port", nil)
+    noServer, err = NewViewServer("test-port", nil, handler)
     if noServer != nil {
         t.Fatalf("ViewServer was created when the RPC server was nil\n")
     }
@@ -26,7 +49,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("NewViewServer did not return an error code when the RPC server was nil\n")
     }
 
-    server, err := NewViewServer(hostPort, rpcServer)
+    server, err := NewViewServer(hostPort, rpcServer, handler)
     if server == nil {
         t.Fatalf("Could not initialize view server. Server reference is nil\n")
     }
