@@ -6,7 +6,7 @@ type ViewServerHandler struct {
 // 
 // server Get() RPC handler.
 //
-func Get(args *GetArgs, reply *GetReply) error {
+func(handler *ViewServerHandler) Get(args *GetArgs, reply *GetReply) error {
 
   // Your code here.
 
