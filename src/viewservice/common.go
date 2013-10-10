@@ -86,3 +86,7 @@ type GetArgs struct {
 type GetReply struct {
   View View
 }
+
+func (view *View) HasPrimaryAck() bool {
+    return (view.Viewnum == INITIAL_VIEW) || (view.PrimaryView == view.Viewnum)
+}

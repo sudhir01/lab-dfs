@@ -5,17 +5,13 @@ import "net"
 import "net/rpc"
 import "log"
 import "time"
-import "sync"
 import "os"
 
 type ViewServer struct {
   rpcServer   *rpc.Server
-  mu          sync.Mutex
   l           net.Listener
   dead        bool
   me          string
-  pingTimes   map[string] time.Time
-  currentView View
   handler     ServerHandler
 }
 
@@ -38,38 +34,10 @@ func (vs *ViewServer) ListenerAddress() string {
     return vs.l.Addr().String()
 }
 
-func (vs *ViewServer) View() *View {
-    return &vs.currentView
-}
-
-func (vs *ViewServer) PingTable() *map[string] time.Time {
-    return &vs.pingTimes
-}
-
-func (vs *ViewServer) hasPrimaryAck() bool {
-    return (vs.currentView.Viewnum == INITIAL_VIEW) || (vs.currentView.PrimaryView == vs.currentView.Viewnum)
-}
 
 // server Ping RPC handler.
 // If ping payload is 0, then the server crashed
-func (vs *ViewServer) Ping(args *PingArgs, reply *PingReply) error {
-    vs.mu.Lock()
-    defer vs.mu.Unlock()
 
-    viewnum              := args.Viewnum
-    server               := args.Me
-    vs.pingTimes[server] = time.Now()
-
-    switch server {
-    case vs.currentView.Primary:
-        vs.currentView.PrimaryView = viewnum
-    case vs.currentView.Backup:
-        vs.currentView.BackupView  = viewnum
-    }
-
-    reply.View = vs.currentView
-    return nil
-}
 
 func elapsedDeadPings(lastPing time.Time) int64 {
     now   := time.Now()
@@ -125,8 +93,6 @@ func NewViewServer(hostPort string, rpcServer *rpc.Server, handler ServerHandler
     vs := new(ViewServer)
 
     vs.me          = hostPort
-    vs.pingTimes   = map[string] time.Time{}
-    vs.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
     vs.rpcServer   = rpcServer
 	 vs.handler     = handler
     return vs, nil
@@ -183,7 +149,7 @@ func (vs *ViewServer) startTicker() {
 
 func StartServer(me string) *ViewServer {
     rpc     := rpc.NewServer()
-	 handler := new(ViewServerHandler)
+	 handler := NewViewServerHandler()
     vs, _ := NewViewServer(me, rpc, handler)
     vs.Start()
     return vs
