@@ -47,10 +47,12 @@ func (handler *ViewServerHandler) Ping(args *PingArgs, reply *PingReply) error {
 	 return nil
 }
 
+//FIXME - this method cannot be exported - remove from handler
 func (handler *ViewServerHandler) PingTable() *map[string] time.Time {
     return &handler.pingTimes
 }
 
+//FIXME - this method cannot be exported - remove from handler
 func (handler *ViewServerHandler) View() *View {
     return &handler.currentView
 }
