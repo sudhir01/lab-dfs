@@ -149,7 +149,8 @@ func (vs *ViewServer) startTicker() {
 
 func StartServer(me string) *ViewServer {
     rpc     := rpc.NewServer()
-	 handler := NewViewServerHandler()
+	 tracker := NewViewTracker()
+	 handler := NewViewServerHandler(tracker)
     vs, _ := NewViewServer(me, rpc, handler)
     vs.Start()
     return vs

@@ -39,14 +39,6 @@ const NO_SERVER    string = ""
 const INITIAL_VIEW int    = 0
 const NO_VIEW      int    = -1
 
-type View struct {
-  Viewnum     int
-  Primary     string
-  Backup      string
-  PrimaryView int
-  BackupView  int
-}
-
 // clients should send a Ping RPC this often,
 // to tell the viewservice that the client is alive.
 const PingInterval = time.Millisecond * 100
@@ -85,8 +77,4 @@ type GetArgs struct {
 
 type GetReply struct {
   View View
-}
-
-func (view *View) HasPrimaryAck() bool {
-    return (view.Viewnum == INITIAL_VIEW) || (view.PrimaryView == view.Viewnum)
 }

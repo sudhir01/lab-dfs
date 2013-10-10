@@ -30,7 +30,8 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 func Test_init_view_server(t *testing.T) {
     hostPort    := Port("v")
     rpcServer   := rpc.NewServer()
-	 handler     := NewViewServerHandler()
+	 tracker		 := NewViewTracker()
+	 handler     := NewViewServerHandler(tracker)
 
     noServer, err := NewViewServer("", rpcServer, handler)
     if noServer != nil {
@@ -90,12 +91,12 @@ func Test_init_view_server(t *testing.T) {
     //TODO - add a test to ensure that the connection acceptor is running
     //TODO - add a test to ensure that the ticker is running
     expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
-    actualView   := handler.View()
+    actualView   := tracker.View()
     if reflect.DeepEqual(actualView, expectedView) == false {
         t.Fatalf("Server was not initialized with expectedView [+%v], got view [+%v]\n", expectedView, actualView)
     }
 
-    pingTable := handler.PingTable()
+    pingTable := tracker.PingTable()
     if pingTable == nil || *pingTable == nil || len(*pingTable) != 0 {
         t.Fatalf("Server's ping table is not empty, pingTable [+%v]\n", pingTable)
     }
