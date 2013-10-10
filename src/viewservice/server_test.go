@@ -19,7 +19,7 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 	 getReply := new(GetReply)
 	 getArgs  := new(GetArgs)
 
-	 clnt.Call("TestServerHandler.Get", getArgs, getReply)
+	 clnt.Call("ViewServer.Get", getArgs, getReply)
 	 actualView   := getReply.View
 	 expectedView := View{1, "primary", "backup", 1, 1}
     if reflect.DeepEqual(actualView, expectedView) == false {

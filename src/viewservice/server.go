@@ -152,7 +152,7 @@ func (vs *ViewServer) openPort() {
 
 func (vs *ViewServer) registerRPCServer() {
 	 //FIXME - registration can happen independent of view server
-    vs.rpcServer.Register(vs.handler)
+    vs.rpcServer.RegisterName("ViewServer", vs.handler)
 }
 
 func (vs *ViewServer) dispatch(conn net.Conn) {
