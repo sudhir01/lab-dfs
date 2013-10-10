@@ -5,6 +5,8 @@ import "strconv"
 
 type TestServerHandler struct {}
 func (TestServerHandler) Get(args *GetArgs, reply *GetReply) error {
+	 view := View{1, "primary", "backup", 1, 1}
+	 reply.View = view
 	 return nil
 }
 func (TestServerHandler) Ping(args *PingArgs, reply *PingReply) error {

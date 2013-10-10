@@ -1,11 +1,9 @@
 package viewservice
 
-import "log"
 import "testing"
 import "net/rpc"
 import "reflect"
 
-//TODO - change the reply from the default empty reply
 func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 	 hostPort  := Port("v")
 	 rpcServer := rpc.NewServer()
@@ -21,9 +19,12 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 	 getReply := new(GetReply)
 	 getArgs  := new(GetArgs)
 
-	 clnt.Call("Get", getArgs, getReply)
-	 log.Printf("Server responded with %+v for TestConnection\n", getReply)
-
+	 clnt.Call("TestServerHandler.Get", getArgs, getReply)
+	 actualView   := getReply.View
+	 expectedView := View{1, "primary", "backup", 1, 1}
+    if reflect.DeepEqual(actualView, expectedView) == false {
+		  t.Fatalf("Server Get reply (+%v) does not match expected reply (+%v)", actualView, expectedView)
+	 }
 }
 
 func Test_init_view_server(t *testing.T) {

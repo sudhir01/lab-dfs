@@ -133,8 +133,7 @@ func NewViewServer(hostPort string, rpcServer *rpc.Server, handler ServerHandler
 }
 
 func (vs *ViewServer) Start() {
-	 //FIXME - cannot register methods that are not valid
-    //vs.registerRPCServer()
+    vs.registerRPCServer()
     vs.openPort()
     go vs.startConnectionAcceptor()
     go vs.startTicker()
@@ -152,7 +151,8 @@ func (vs *ViewServer) openPort() {
 }
 
 func (vs *ViewServer) registerRPCServer() {
-    vs.rpcServer.Register(vs)
+	 //FIXME - registration can happen independent of view server
+    vs.rpcServer.Register(vs.handler)
 }
 
 func (vs *ViewServer) dispatch(conn net.Conn) {
