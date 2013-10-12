@@ -3,6 +3,16 @@ package viewservice
 import "os"
 import "strconv"
 
+type TestServerHandler struct {}
+func (TestServerHandler) Get(args *GetArgs, reply *GetReply) error {
+	 view := View{1, "primary", "backup", 1, 1}
+	 reply.View = view
+	 return nil
+}
+func (TestServerHandler) Ping(args *PingArgs, reply *PingReply) error {
+	 return nil
+}
+
 func Port(suffix string) string {
   s := "/var/tmp/824-"
   s += strconv.Itoa(os.Getuid()) + "/"

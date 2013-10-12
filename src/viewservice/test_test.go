@@ -113,7 +113,7 @@ func Test1(t *testing.T) {
       ck3.Ping(0)
       v, _ := ck1.Ping(vx.Viewnum)
       if v.Primary == ck1.me && v.Backup == ck3.me {
-        break;
+        break
       }
       vx = v
       time.Sleep(PingInterval)

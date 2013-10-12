@@ -2,17 +2,38 @@ package viewservice
 
 import "testing"
 import "net/rpc"
+import "reflect"
 
-// import "runtime"
-// import "time"
-// import "fmt"
-// import "os"
+func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
+	 hostPort  := Port("v")
+	 rpcServer := rpc.NewServer()
+	 handler   := new(TestServerHandler)
+	 server, _ := NewViewServer(hostPort, rpcServer, handler)
+
+	 server.Start()
+	 clnt, errx := rpc.Dial("unix", hostPort)
+	 if errx != nil {
+		  t.Fatalf("Unable to establish a connection wit the server %s, got error %s\n", hostPort, errx.Error())
+	 }
+	 defer clnt.Close()
+	 getReply := new(GetReply)
+	 getArgs  := new(GetArgs)
+
+	 clnt.Call("ViewServer.Get", getArgs, getReply)
+	 actualView   := getReply.View
+	 expectedView := View{1, "primary", "backup", 1, 1}
+    if reflect.DeepEqual(actualView, expectedView) == false {
+		  t.Fatalf("Server Get reply (+%v) does not match expected reply (+%v)", actualView, expectedView)
+	 }
+}
 
 func Test_init_view_server(t *testing.T) {
     hostPort    := Port("v")
     rpcServer   := rpc.NewServer()
+	 tracker		 := NewViewTracker()
+	 handler     := NewViewServerHandler(tracker)
 
-    noServer, err := NewViewServer("", rpcServer)
+    noServer, err := NewViewServer("", rpcServer, handler)
     if noServer != nil {
         t.Fatalf("Server was created when no hostname was provided\n")
     }
@@ -21,7 +42,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    noServer, err = NewViewServer("test-port", nil)
+    noServer, err = NewViewServer("test-port", nil, handler)
     if noServer != nil {
         t.Fatalf("ViewServer was created when the RPC server was nil\n")
     }
@@ -30,7 +51,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("NewViewServer did not return an error code when the RPC server was nil\n")
     }
 
-    server, err := NewViewServer(hostPort, rpcServer)
+    server, err := NewViewServer(hostPort, rpcServer, handler)
     if server == nil {
         t.Fatalf("Could not initialize view server. Server reference is nil\n")
     }
@@ -70,12 +91,12 @@ func Test_init_view_server(t *testing.T) {
     //TODO - add a test to ensure that the connection acceptor is running
     //TODO - add a test to ensure that the ticker is running
     expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
-    actualView   := server.View()
-    if actualView != expectedView {
+    actualView   := tracker.View()
+    if reflect.DeepEqual(actualView, expectedView) == false {
         t.Fatalf("Server was not initialized with expectedView [+%v], got view [+%v]\n", expectedView, actualView)
     }
 
-    pingTable := server.PingTable()
+    pingTable := tracker.PingTable()
     if pingTable == nil || *pingTable == nil || len(*pingTable) != 0 {
         t.Fatalf("Server's ping table is not empty, pingTable [+%v]\n", pingTable)
     }
