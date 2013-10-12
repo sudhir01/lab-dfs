@@ -33,11 +33,6 @@ func (vs *ViewServer) ListenerAddress() string {
     return vs.l.Addr().String()
 }
 
-
-// server Ping RPC handler.
-// If ping payload is 0, then the server crashed
-
-
 func elapsedDeadPings(lastPing time.Time) int64 {
     now   := time.Now()
     delta := now.Sub(lastPing)

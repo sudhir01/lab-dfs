@@ -4,6 +4,7 @@ import (
 	 "sync"
 	 "time"
 )
+
 type ViewTracker struct {
   mu          sync.Mutex
   pingTimes   map[string] time.Time
@@ -31,7 +32,6 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 	 case this.currentView.Backup:
 		  this.currentView.BackupView  = viewnum
 	 }
-
 	 reply.View = this.currentView
 	 return nil
 }
