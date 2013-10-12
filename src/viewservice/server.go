@@ -1,6 +1,5 @@
 package viewservice
 
-import "errors"
 import "net"
 import "net/rpc"
 import "log"
@@ -74,30 +73,6 @@ func (vs *ViewServer) Kill() {
   vs.l.Close()
 }
 
-func NewViewServer(hostPort string, rpcServer *rpc.Server, handler ServerHandler) (*ViewServer, error) {
-    if hostPort == "" {
-        err := errors.New("hostPort cannot be empty")
-        return nil, err
-    }
-
-    if rpcServer == nil {
-        err := errors.New("RPC server cannot be nil")
-        return nil, err
-    }
-
-	 if handler == nil {
-		  err := errors.New("Server handler cannot be nil")
-		  return nil, err
-	 }
-
-    vs := new(ViewServer)
-
-    vs.me          = hostPort
-    vs.rpcServer   = rpcServer
-	 vs.handler     = handler
-    return vs, nil
-}
-
 func (vs *ViewServer) Start() {
     vs.registerRPCServer()
     vs.openPort()
@@ -117,7 +92,6 @@ func (vs *ViewServer) openPort() {
 }
 
 func (vs *ViewServer) registerRPCServer() {
-	 //FIXME - registration can happen independent of view server
     vs.rpcServer.RegisterName("ViewServer", vs.handler)
 }
 
