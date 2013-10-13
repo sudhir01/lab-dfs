@@ -45,9 +45,8 @@ func (this *ViewTracker) View() *View {
 }
 /* tick() is called once per PingInterval.
 - thread safe
-- It should notice
-if servers have died or recovered, and change the view
-accordingly.
+- It should notice if servers have died or recovered, and change the view accordingly.
+
 Periodic tasks on ping:
 1. Mark server dead if max DeadPings have passed for PingIntervals
 2. Update view for either (only if primary has not drifted):
