@@ -67,7 +67,7 @@ func (vs *ViewServer) markDeadServers() {
 }
 
 func (vs *ViewServer) tick() {
-	 vs.tracker.tick()
+	 vs.tracker.Tick()
 }
 
 func (vs *ViewServer) openPort() {

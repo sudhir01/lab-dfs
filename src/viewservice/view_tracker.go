@@ -64,6 +64,6 @@ Periodic tasks on ping:
 i.  dead server or                      -> TODO
 ii. idle server when there is no backup -> TODO
 */
-func (this  *ViewTracker) tick() {
+func (this  *ViewTracker) Tick() {
   // Your code here.
 }
