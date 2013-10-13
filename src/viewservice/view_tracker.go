@@ -33,8 +33,8 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 		  this.currentView.Viewnum = 1
 		  this.currentView.Primary = server
 	// view server rebooted, old server still alive
-	 } else if this.currentView.Viewnum == 0 && viewnum != 0 {
 	 } else if this.currentView.Viewnum != 0 && viewnum == 0 {
+	 } else if this.currentView.Viewnum == 0 && viewnum != 0 {
 	 } else if this.currentView.Viewnum != 0 && viewnum != 0 {
 	 }
 		  //the server crashed or booted

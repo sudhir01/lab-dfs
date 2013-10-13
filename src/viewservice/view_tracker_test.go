@@ -18,11 +18,8 @@ func Test_tracker_initialization(t *testing.T) {
 }
 
 func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T) {
-	 server1 := "server-1"
-	 timer   := &MockTimer{0, 0}
-	 tracker	:= NewViewTracker(timer)
-	 ping    := &PingArgs{server1, INITIAL_VIEW}
-	 reply   := new(PingReply)
+	 server1, timer, tracker, ping, reply := ViewTrackerVariables()
+
 	 tracker.Ping(ping, reply)
 
 	 //check view
@@ -35,6 +32,10 @@ func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T
 	 checkTable(tracker, expectedTable, t)
 }
 
+func Test_view_does_not_change_till_primary_acks(t *testing.T) {
+	 //server1, timer, tracker, ping, reply := ViewTrackerVariables()
+}
+
 func Test_primary_is_primary_from_last_view(t *testing.T) {
 	 //server1 := "server-1-primary"
 	 //server2 := "server-2-backup"
@@ -43,10 +44,6 @@ func Test_primary_is_primary_from_last_view(t *testing.T) {
 }
 
 func Test_primary_is_backup_from_last_view(t *testing.T) {
-    t.FailNow()
-}
-
-func Test_any_primary_on_view_server_init(t *testing.T) {
     t.FailNow()
 }
 

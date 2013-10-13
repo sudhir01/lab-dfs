@@ -61,3 +61,13 @@ func (this *MockTimer) Increment(sec int64, nsec int64) {
 func (this *MockTimer) Now() time.Time {
 	 return time.Unix(this.sec, this.nsec)
 }
+
+func ViewTrackerVariables() (string, Timer, *ViewTracker, *PingArgs, *PingReply) {
+	 server1 := "server-1"
+	 timer	:= &MockTimer{0, 0}
+	 tracker := NewViewTracker(timer)
+	 ping    := &PingArgs{server1, INITIAL_VIEW}
+	 reply   := new(PingReply)
+
+	 return server1, timer, tracker, ping, reply
+}
