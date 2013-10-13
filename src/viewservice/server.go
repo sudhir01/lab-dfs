@@ -25,7 +25,8 @@ func (this *ViewServer) Start() {
 //TODO - deprecated method, update references and remove it
 func StartServer(me string) *ViewServer {
 	 rpc     := rpc.NewServer()
-	 tracker := NewViewTracker()
+	 timer   := new(DefaultTimer)
+	 tracker := NewViewTracker(timer)
 	 handler := NewViewServerHandler(tracker)
 	 this, _ := NewViewServer(me, rpc, tracker, handler)
 	 this.Start()

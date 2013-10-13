@@ -6,6 +6,7 @@ import (
 	 "testing"
 	 "time"
 	 "reflect"
+	 "log"
 )
 
 type TestServerHandler struct {}
@@ -41,4 +42,24 @@ func checkTable(tracker *ViewTracker, expectedTable *map[string] time.Time, t *t
 	 if reflect.DeepEqual(actualTable, expectedTable) == false {
 		  t.Fatalf("Tracker expected ping table [%v], got ping table (%v)\n", expectedTable, actualTable)
 	 }
+}
+
+type MockTimer struct {
+	 sec  int64
+	 nsec int64
+}
+
+func (this *MockTimer) Decrement(sec int64, nsec int64) {
+	 this.sec -= sec
+	 this.nsec -= nsec
+}
+
+func (this *MockTimer) Increment(sec int64, nsec int64) {
+	 this.sec -= sec
+	 this.nsec -= nsec
+}
+
+func (this *MockTimer) Now() time.Time {
+	 log.Printf("Mock timer called for sec:nsec %v:%v\n", this.sec, this.nsec)
+	 return time.Unix(this.sec, this.nsec)
 }

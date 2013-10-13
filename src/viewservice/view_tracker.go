@@ -9,12 +9,14 @@ type ViewTracker struct {
   mu          sync.Mutex
   pingTimes   map[string] time.Time
   currentView View
+  timer       Timer
 }
 
-func NewViewTracker() *ViewTracker {
+func NewViewTracker(timer Timer) *ViewTracker {
 	 this := new(ViewTracker)
 	 this.pingTimes   = map[string] time.Time{}
 	 this.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
+	 this.timer       = timer
 	 return this
 }
 
@@ -24,7 +26,7 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 
 	 viewnum                := args.Viewnum
 	 server                 := args.Me
-	 this.pingTimes[server] = time.Now()
+	 this.pingTimes[server] = this.timer.Now()
 
 	 switch server {
 	 case this.currentView.Primary:
@@ -59,8 +61,8 @@ func (this  *ViewTracker) Tick() {
 
 //private methods
 
-func elapsedDeadPings(lastPing time.Time) int64 {
-    now   := time.Now()
+func (this *ViewTracker) ElapsedDeadPings(lastPing time.Time) int64 {
+    now   := this.timer.Now()
     delta := now.Sub(lastPing)
     return int64(delta/PingInterval)
     //milli := (delta.Nanoseconds()/1000)

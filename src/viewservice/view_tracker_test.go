@@ -5,9 +5,9 @@ import (
 	 "time"
 )
 
-
 func Test_tracker_initialization(t *testing.T) {
-	 tracker	     := NewViewTracker()
+	 timer        := &MockTimer{0, 0}
+	 tracker	     := NewViewTracker(timer)
 	 expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
 	 checkView(tracker, expectedView, t)
 
@@ -19,7 +19,8 @@ func Test_tracker_initialization(t *testing.T) {
 
 func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T) {
 	 server1 := "server-1"
-	 tracker	:= NewViewTracker()
+	 timer   := &MockTimer{0, 0}
+	 tracker	:= NewViewTracker(timer)
 	 ping    := &PingArgs{server1, NO_VIEW}
 	 reply   := new(PingReply)
 	 tracker.Ping(ping, reply)

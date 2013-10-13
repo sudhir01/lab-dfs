@@ -10,7 +10,8 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 	 hostPort  := Port("v")
 	 rpcServer := rpc.NewServer()
 	 handler   := new(TestServerHandler)
-	 tracker	  := NewViewTracker()
+	 timer	  := new(DefaultTimer)
+	 tracker	  := NewViewTracker(timer)
 	 server, _ := NewViewServer(hostPort, rpcServer, tracker, handler)
 
 	 server.Start()
@@ -31,10 +32,11 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 }
 
 func Test_init_view_server(t *testing.T) {
-    hostPort    := Port("v")
-    rpcServer   := rpc.NewServer()
-	 tracker		 := NewViewTracker()
-	 handler     := NewViewServerHandler(tracker)
+    hostPort  := Port("v")
+    rpcServer := rpc.NewServer()
+	 timer	  := new(DefaultTimer)
+	 tracker	  := NewViewTracker(timer)
+	 handler   := NewViewServerHandler(tracker)
 
     noServer, err := NewViewServer("", rpcServer, tracker, handler)
     if noServer != nil {
