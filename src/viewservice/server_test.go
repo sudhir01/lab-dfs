@@ -8,7 +8,8 @@ func Test_server_accepts_connection_for_get_and_ping(t *testing.T) {
 	 hostPort  := Port("v")
 	 rpcServer := rpc.NewServer()
 	 handler   := new(TestServerHandler)
-	 server, _ := NewViewServer(hostPort, rpcServer, handler)
+	 tracker	  := NewViewTracker()
+	 server, _ := NewViewServer(hostPort, rpcServer, tracker, handler)
 
 	 server.Start()
 	 clnt, errx := rpc.Dial("unix", hostPort)
@@ -33,7 +34,7 @@ func Test_init_view_server(t *testing.T) {
 	 tracker		 := NewViewTracker()
 	 handler     := NewViewServerHandler(tracker)
 
-    noServer, err := NewViewServer("", rpcServer, handler)
+    noServer, err := NewViewServer("", rpcServer, tracker, handler)
     if noServer != nil {
         t.Fatalf("Server was created when no hostname was provided\n")
     }
@@ -42,7 +43,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("Error message not returned for invalid server initialization parameters\n")
     }
 
-    noServer, err = NewViewServer("test-port", nil, handler)
+    noServer, err = NewViewServer("test-port", nil, tracker, handler)
     if noServer != nil {
         t.Fatalf("ViewServer was created when the RPC server was nil\n")
     }
@@ -51,7 +52,7 @@ func Test_init_view_server(t *testing.T) {
         t.Fatalf("NewViewServer did not return an error code when the RPC server was nil\n")
     }
 
-    server, err := NewViewServer(hostPort, rpcServer, handler)
+    server, err := NewViewServer(hostPort, rpcServer, tracker, handler)
     if server == nil {
         t.Fatalf("Could not initialize view server. Server reference is nil\n")
     }
@@ -63,11 +64,6 @@ func Test_init_view_server(t *testing.T) {
     if server.IsListening() == true {
         t.Fatalf("New server is listening before starting the server\n")
     }
-
-    //FIXME - figure out how to extend struct in different package
-    //if rpcServer.IsRegistered("server") == true {
-    //    t.Fatalf("RPC server does not have the ViewServer registered\n")
-    //}
 
     server.Start()
 

@@ -22,14 +22,3 @@ func Port(suffix string) string {
   s += suffix
   return s
 }
-
-func InitServer(serverHostPort string) *ViewServer {
-    server := StartServer(serverHostPort)
-    return server
-}
-
-func InitClient(clientPortName string, serverHostPort string) *Clerk {
-    client := MakeClerk(Port(clientPortName), serverHostPort)
-    return client
-}
-

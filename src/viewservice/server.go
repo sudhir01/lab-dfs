@@ -12,6 +12,24 @@ type ViewServer struct {
   dead        bool
   me          string
   handler     ServerHandler
+  tracker	  *ViewTracker
+}
+
+func (vs *ViewServer) Start() {
+    vs.registerRPCServer()
+    vs.openPort()
+    go vs.startConnectionAcceptor()
+    go vs.startTicker()
+}
+
+//TODO - deprecated method, update references and remove it
+func StartServer(me string) *ViewServer {
+	 rpc     := rpc.NewServer()
+	 tracker := NewViewTracker()
+	 handler := NewViewServerHandler(tracker)
+	 vs, _ := NewViewServer(me, rpc, tracker, handler)
+	 vs.Start()
+	 return vs
 }
 
 func (vs *ViewServer) IsListening() bool {
@@ -33,31 +51,6 @@ func (vs *ViewServer) ListenerAddress() string {
     return vs.l.Addr().String()
 }
 
-func elapsedDeadPings(lastPing time.Time) int64 {
-    now   := time.Now()
-    delta := now.Sub(lastPing)
-    return int64(delta/PingInterval)
-    //milli := (delta.Nanoseconds()/1000)
-    //pings := milli / (PingInterval.Nanoseconds()/1000)
-    //return pings
-}
-
-func (vs *ViewServer) markDeadServers() {
-}
-
-// tick() is called once per PingInterval; it should notice
-// if servers have died or recovered, and change the view
-// accordingly.
-// Periodic tasks on ping:
-//    1. Mark server dead if max DeadPings have passed for PingIntervals
-//    2. Update view for either (only if primary has not drifted):
-//       i.  dead server or                      -> TODO
-//       ii. idle server when there is no backup -> TODO
-func (vs *ViewServer) tick() {
-
-  // Your code here.
-}
-
 //
 // tell the server to shut itself down.
 // for testing.
@@ -68,11 +61,13 @@ func (vs *ViewServer) Kill() {
   vs.l.Close()
 }
 
-func (vs *ViewServer) Start() {
-    vs.registerRPCServer()
-    vs.openPort()
-    go vs.startConnectionAcceptor()
-    go vs.startTicker()
+//private methods
+
+func (vs *ViewServer) markDeadServers() {
+}
+
+func (vs *ViewServer) tick() {
+	 vs.tracker.tick()
 }
 
 func (vs *ViewServer) openPort() {
@@ -116,11 +111,3 @@ func (vs *ViewServer) startTicker() {
     }
 }
 
-func StartServer(me string) *ViewServer {
-    rpc     := rpc.NewServer()
-	 tracker := NewViewTracker()
-	 handler := NewViewServerHandler(tracker)
-    vs, _ := NewViewServer(me, rpc, handler)
-    vs.Start()
-    return vs
-}
