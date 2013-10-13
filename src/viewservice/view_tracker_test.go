@@ -2,16 +2,14 @@ package viewservice
 
 import (
 	 "testing"
-	 "reflect"
+	 "time"
 )
+
 
 func Test_tracker_initialization(t *testing.T) {
 	 tracker	     := NewViewTracker()
 	 expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
-	 actualView   := tracker.View()
-	 if reflect.DeepEqual(actualView, expectedView) == false {
-		  t.Fatalf("Tracker was not initialized with expectedView [+%v], got view [+%v]\n", expectedView, actualView)
-	 }
+	 checkView(tracker, expectedView, t)
 
 	 pingTable := tracker.PingTable()
 	 if pingTable == nil || *pingTable == nil || len(*pingTable) != 0 {
@@ -20,7 +18,20 @@ func Test_tracker_initialization(t *testing.T) {
 }
 
 func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T) {
-	 t.FailNow()
+	 server1 := "server-1"
+	 tracker	:= NewViewTracker()
+	 ping    := &PingArgs{server1, NO_VIEW}
+	 reply   := new(PingReply)
+	 tracker.Ping(ping, reply)
+
+	 //check view
+	 expectedView := &View{1, server1, NO_SERVER, NO_VIEW, NO_VIEW}
+	 checkView(tracker, expectedView, t)
+
+	 //check ping table
+	 time1 := time.Unix(1, 0)
+	 expectedTable := &map[string] time.Time { server1: time1}
+	 checkTable(tracker, expectedTable, t)
 }
 
 func Test_primary_is_primary_from_last_view(t *testing.T) {

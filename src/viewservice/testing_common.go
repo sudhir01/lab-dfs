@@ -1,7 +1,12 @@
 package viewservice
 
-import "os"
-import "strconv"
+import (
+	 "os"
+	 "strconv"
+	 "testing"
+	 "time"
+	 "reflect"
+)
 
 type TestServerHandler struct {}
 func (TestServerHandler) Get(args *GetArgs, reply *GetReply) error {
@@ -21,4 +26,19 @@ func Port(suffix string) string {
   s += strconv.Itoa(os.Getpid()) + "-"
   s += suffix
   return s
+}
+
+func checkView(tracker *ViewTracker, expectedView *View, t *testing.T) {
+	 actualView   := tracker.View()
+	 if reflect.DeepEqual(actualView, expectedView) == false {
+		  t.Fatalf("Tracker expected view [+%v], got view [+%v]\n", expectedView, actualView)
+	 }
+}
+
+func checkTable(tracker *ViewTracker, expectedTable *map[string] time.Time, t *testing.T) {
+	 actualTable := tracker.PingTable()
+
+	 if reflect.DeepEqual(actualTable, expectedTable) == false {
+		  t.Fatalf("Tracker expected ping table [%v], got ping table (%v)\n", expectedTable, actualTable)
+	 }
 }

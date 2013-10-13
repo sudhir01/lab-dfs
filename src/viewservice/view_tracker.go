@@ -24,7 +24,7 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 
 	 viewnum                := args.Viewnum
 	 server                 := args.Me
-	 this.pingTimes[server]  = time.Now()
+	 this.pingTimes[server] = time.Now()
 
 	 switch server {
 	 case this.currentView.Primary:
