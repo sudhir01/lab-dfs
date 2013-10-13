@@ -62,12 +62,13 @@ func (this *MockTimer) Now() time.Time {
 	 return time.Unix(this.sec, this.nsec)
 }
 
-func ViewTrackerVariables() (string, Timer, *ViewTracker, *PingArgs, *PingReply) {
-	 server1 := "server-1"
-	 timer	:= &MockTimer{0, 0}
-	 tracker := NewViewTracker(timer)
-	 ping    := &PingArgs{server1, INITIAL_VIEW}
-	 reply   := new(PingReply)
+func ViewTrackerVariables() (string, Timer, *ViewTracker, *PingArgs, *PingReply, *View) {
+	 primary	     := "server-1-primary"
+	 timer		  := &MockTimer{0, 0}
+	 tracker	     := NewViewTracker(timer)
+	 ping         := &PingArgs{primary, INITIAL_VIEW}
+	 reply        := new(PingReply)
+	 expectedView := &View{1, primary, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 
-	 return server1, timer, tracker, ping, reply
+	 return primary, timer, tracker, ping, reply, expectedView
 }

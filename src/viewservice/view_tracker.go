@@ -36,6 +36,12 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 	 } else if this.currentView.Viewnum != 0 && viewnum == 0 {
 	 } else if this.currentView.Viewnum == 0 && viewnum != 0 {
 	 } else if this.currentView.Viewnum != 0 && viewnum != 0 {
+		  switch server {
+		      default:
+		      case this.currentView.Primary:
+					 this.currentView.PrimaryView = viewnum
+		      case this.currentView.Backup:
+		  }
 	 }
 		  //the server crashed or booted
 		  /*

@@ -18,12 +18,9 @@ func Test_tracker_initialization(t *testing.T) {
 }
 
 func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T) {
-	 server1, timer, tracker, ping, reply := ViewTrackerVariables()
+	 server1, timer, tracker, ping, reply, expectedView := ViewTrackerVariables()
 
 	 tracker.Ping(ping, reply)
-
-	 //check view
-	 expectedView := &View{1, server1, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 	 checkView(tracker, expectedView, t)
 
 	 //check ping table
@@ -32,8 +29,30 @@ func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T
 	 checkTable(tracker, expectedTable, t)
 }
 
+func Test_update_initial_view_for_primary(t *testing.T) {
+	 _, _, tracker, ping, reply, expectedView := ViewTrackerVariables()
+	 tracker.Ping(ping, reply)
+	 ping.Viewnum = 1
+	 tracker.Ping(ping, reply)
+	 expectedView.PrimaryView = 1
+	 checkView(tracker, expectedView, t)
+}
+
 func Test_view_does_not_change_till_primary_acks(t *testing.T) {
-	 //server1, timer, tracker, ping, reply := ViewTrackerVariables()
+	 _, _, tracker, primaryPing, reply, expectedView := ViewTrackerVariables()
+	 backup     := "server-2-backup"
+	 backupPing := &PingArgs{backup, INITIAL_VIEW}
+
+	 tracker.Ping(primaryPing, reply)
+	 tracker.Ping(backupPing, reply)
+	 //primary acks viewnum
+	 primaryPing.Viewnum = 1
+	 tracker.Ping(primaryPing, reply)
+	 tracker.Ping(backupPing, reply)
+	 expectedView.Viewnum = 2
+	 expectedView.PrimaryView = 1
+	 expectedView.Backup = backup
+	 checkView(tracker, expectedView, t)
 }
 
 func Test_primary_is_primary_from_last_view(t *testing.T) {
