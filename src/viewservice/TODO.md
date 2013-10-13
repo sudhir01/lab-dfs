@@ -4,9 +4,9 @@
 
 ### Initialization
 
-- Move the RPC handler to a separate struct
+- [X] Move the RPC handler to a separate struct
 
-- The Server Factory should create a server with a rpc server and server handler
+- [X] The Server Factory should create a server with a rpc server and server handler
 
 # Overall notes
 - During a view, make sure that primary is primary or the backup from the previous view
