@@ -8,11 +8,11 @@ import (
 func Test_tracker_initialization(t *testing.T) {
 	 timer        := &MockTimer{0, 0}
 	 tracker	     := NewViewTracker(timer)
-	 expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
+	 expectedView := &View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 	 checkView(tracker, expectedView, t)
 
 	 pingTable := tracker.PingTable()
-	 if pingTable == nil || *pingTable == nil || len(*pingTable) != 0 {
+	 if pingTable == nil || pingTable == nil || len(pingTable) != 0 {
 		  t.Fatalf("Server's ping table is not empty, pingTable [+%v]\n", pingTable)
 	 }
 }
@@ -21,21 +21,24 @@ func Test_server_becomes_primary_on_first_ping_after_initialization(t *testing.T
 	 server1 := "server-1"
 	 timer   := &MockTimer{0, 0}
 	 tracker	:= NewViewTracker(timer)
-	 ping    := &PingArgs{server1, NO_VIEW}
+	 ping    := &PingArgs{server1, INITIAL_VIEW}
 	 reply   := new(PingReply)
 	 tracker.Ping(ping, reply)
 
 	 //check view
-	 expectedView := &View{1, server1, NO_SERVER, NO_VIEW, NO_VIEW}
+	 expectedView := &View{1, server1, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 	 checkView(tracker, expectedView, t)
 
 	 //check ping table
-	 time1 := time.Unix(1, 0)
-	 expectedTable := &map[string] time.Time { server1: time1}
+	 time1 := timer.Now()
+	 expectedTable := map[string] time.Time { server1: time1}
 	 checkTable(tracker, expectedTable, t)
 }
 
 func Test_primary_is_primary_from_last_view(t *testing.T) {
+	 //server1 := "server-1-primary"
+	 //server2 := "server-2-backup"
+	 //server3 := "server-3-idle"
     t.FailNow()
 }
 

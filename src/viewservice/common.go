@@ -37,7 +37,6 @@ type Server string
 
 const NO_SERVER    string = ""
 const INITIAL_VIEW int    = 0
-const NO_VIEW      int    = -1
 
 // clients should send a Ping RPC this often,
 // to tell the viewservice that the client is alive.

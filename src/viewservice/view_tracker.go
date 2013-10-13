@@ -15,7 +15,7 @@ type ViewTracker struct {
 func NewViewTracker(timer Timer) *ViewTracker {
 	 this := new(ViewTracker)
 	 this.pingTimes   = map[string] time.Time{}
-	 this.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, NO_VIEW, NO_VIEW}
+	 this.currentView = View{INITIAL_VIEW, NO_SERVER, NO_SERVER, INITIAL_VIEW, INITIAL_VIEW}
 	 this.timer       = timer
 	 return this
 }
@@ -28,18 +28,33 @@ func (this *ViewTracker) Ping(args *PingArgs, reply *PingReply) error {
 	 server                 := args.Me
 	 this.pingTimes[server] = this.timer.Now()
 
-	 switch server {
-	 case this.currentView.Primary:
-		  this.currentView.PrimaryView = viewnum
-	 case this.currentView.Backup:
-		  this.currentView.BackupView  = viewnum
+	 //the view server booted, first ping
+	 if this.currentView.Viewnum == 0  && viewnum == 0 {
+		  this.currentView.Viewnum = 1
+		  this.currentView.Primary = server
+	// view server rebooted, old server still alive
+	 } else if this.currentView.Viewnum == 0 && viewnum != 0 {
+	 } else if this.currentView.Viewnum != 0 && viewnum == 0 {
+	 } else if this.currentView.Viewnum != 0 && viewnum != 0 {
 	 }
+		  //the server crashed or booted
+		  /*
+		  if viewnum == 0 {
+				if server == this.currentView.Primary {
+				} else {
+				}
+		  } else if viewnum == 0 && server == this.currentView.Backup {
+
+		  } else if viewnum > 0 && server == this.currentView.Primary {
+		  } else if viewnum > 0 && server == this.currentView.Backup {
+		  } else if viewnum  {}
+		  */
 	 reply.View = this.currentView
 	 return nil
 }
 
-func (this *ViewTracker) PingTable() *map[string] time.Time {
-    return &this.pingTimes
+func (this *ViewTracker) PingTable() map[string] time.Time {
+    return this.pingTimes
 }
 
 func (this *ViewTracker) View() *View {
